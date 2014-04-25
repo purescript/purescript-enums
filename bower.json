@@ -1,6 +1,5 @@
 {
   "name": "purescript-enums",
-  "version": "0.0.0",
   "homepage": "https://github.com/purescript/purescript-enums",
   "description": "Operations for sequentially ordered types",
   "keywords": [
@@ -9,11 +8,14 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
-    "node_modules",
     "bower_components",
-    "examples",
-    "externs",
-    "js"
+    "node_modules",
+    "output",
+    "tests",
+    "tmp",
+    "bower.json",
+    "Gruntfile.js",
+    "package.json"
   ],
   "dependencies": {
     "purescript-maybe": "*"
