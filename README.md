@@ -14,6 +14,3 @@
     pred :: forall a. (Enum a) => a -> Maybe a
 
     succ :: forall a. (Enum a) => a -> Maybe a
-
-
-
