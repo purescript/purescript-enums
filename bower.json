@@ -18,6 +18,7 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-maybe": "*"
+    "purescript-maybe":  "*",
+    "purescript-tuples": "*"
   }
 }
