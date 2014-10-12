@@ -2,15 +2,35 @@
 
 ## Module Data.Enum
 
+### Types
+
+    newtype Cardinality a where
+      Cardinality :: Number -> Cardinality a
+
+
 ### Type Classes
 
-    class Enum a where
-      toEnum :: Prim.Number -> Maybe a
-      fromEnum :: a -> Prim.Number
+    class (Ord a) <= Enum a where
+      cardinality :: Cardinality a
+      firstEnum :: a
+      lastEnum :: a
+      succ :: a -> Maybe a
+      pred :: a -> Maybe a
+
+
+### Type Class Instances
+
+    instance enumBoolean :: Enum Boolean
+
+    instance enumMaybe :: (Enum a) => Enum (Maybe a)
+
+    instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)
 
 
 ### Values
 
-    pred :: forall a. (Enum a) => a -> Maybe a
+    fromEnum :: forall a. (Enum a) => a -> Number
 
-    succ :: forall a. (Enum a) => a -> Maybe a
+    runCardinality :: forall a. Cardinality a -> Number
+
+    toEnum :: forall a. (Enum a) => Number -> Maybe a
