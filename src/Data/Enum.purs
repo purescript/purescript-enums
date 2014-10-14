@@ -1,8 +1,13 @@
 module Data.Enum 
   ( Enum
   , Cardinality(..)
+  , cardinality
+  , firstEnum
   , fromEnum
+  , lastEnum
+  , pred
   , runCardinality
+  , succ
   , toEnum
   ) where
 
