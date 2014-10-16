@@ -22,6 +22,8 @@
 
     instance enumBoolean :: Enum Boolean
 
+    instance enumChar :: Enum Char
+
     instance enumMaybe :: (Enum a) => Enum (Maybe a)
 
     instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)

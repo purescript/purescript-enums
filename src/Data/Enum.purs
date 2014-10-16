@@ -13,6 +13,7 @@ module Data.Enum
 
   import Data.Maybe
   import Data.Tuple
+  import Data.Char
   import Data.Maybe.Unsafe
 
   newtype Cardinality a = Cardinality Number 
@@ -54,6 +55,17 @@ module Data.Enum
 
   maybeCardinality :: forall a. (Enum a) => Cardinality a -> Cardinality (Maybe a)
   maybeCardinality c = Cardinality $ 1 + (runCardinality c)
+
+  instance enumChar :: Enum Char where
+    cardinality = Cardinality (65535 + 1)
+
+    firstEnum = fromCharCode 0
+
+    lastEnum = fromCharCode 65535
+
+    succ c = if c == lastEnum then Nothing else Just $ (fromCharCode <<< ((+) 1) <<< toCharCode) c
+
+    pred c = if c == firstEnum then Nothing else Just $ (fromCharCode <<< ((+) (-1)) <<< toCharCode) c
 
   instance enumMaybe :: (Enum a) => Enum (Maybe a) where
     cardinality = maybeCardinality cardinality
