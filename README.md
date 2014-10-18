@@ -24,6 +24,8 @@
 
     instance enumChar :: Enum Char
 
+    instance enumEither :: (Enum a, Enum b) => Enum (Either a b)
+
     instance enumMaybe :: (Enum a) => Enum (Maybe a)
 
     instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)
