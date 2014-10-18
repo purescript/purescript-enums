@@ -12,6 +12,7 @@ module Data.Enum
   ) where
 
   import Data.Maybe
+  import Data.Either
   import Data.Tuple
   import Data.Char
   import Data.Maybe.Unsafe
@@ -106,3 +107,19 @@ module Data.Enum
 
   tupleCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Tuple a b)
   tupleCardinality l r = Cardinality $ (runCardinality l) * (runCardinality r)
+
+  instance enumEither :: (Enum a, Enum b) => Enum (Either a b) where
+    cardinality = eitherCardinality cardinality cardinality
+
+    firstEnum = Left firstEnum
+
+    lastEnum = Right lastEnum
+
+    succ (Left a) = maybe (Just $ Right firstEnum) (Just <<< Left) (succ a)
+    succ (Right b) = maybe (Nothing) (Just <<< Right) (succ b)
+
+    pred (Left a) = maybe (Nothing) (Just <<< Left) (pred a)
+    pred (Right b) = maybe (Just $ Left lastEnum) (Just <<< Right) (pred b)
+
+  eitherCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Either a b)
+  eitherCardinality l r = Cardinality $ (runCardinality l) + (runCardinality r)
