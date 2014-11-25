@@ -16,6 +16,8 @@
       lastEnum :: a
       succ :: a -> Maybe a
       pred :: a -> Maybe a
+      toEnum :: Number -> Maybe a
+      fromEnum :: a -> Number
 
 
 ### Type Class Instances
@@ -33,8 +35,12 @@
 
 ### Values
 
-    fromEnum :: forall a. (Enum a) => a -> Number
+    defaultFromEnum :: forall a. (a -> Maybe a) -> a -> Number
+
+    defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+
+    defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+
+    defaultToEnum :: forall a. (a -> Maybe a) -> a -> Number -> Maybe a
 
     runCardinality :: forall a. Cardinality a -> Number
-
-    toEnum :: forall a. (Enum a) => Number -> Maybe a
