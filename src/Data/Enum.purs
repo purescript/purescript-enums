@@ -32,13 +32,23 @@ module Data.Enum
   -- | to easily compute successor and predecessor elements. e.g. DayOfWeek, etc.
   -- |
   -- | Laws:
-  -- |   succ firstEnum >>= succ >>= succ ... succ [cardinality times] == lastEnum
-  -- |   pred lastEnum  >>= pred >>= pred ... pred [cardinality times] == firstEnum
-  -- |
-  -- |   Just $ e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2
-  -- |
+  -- |   succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum
+  -- |   pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum
+  -- |   
+  -- |   e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2
+  -- |   
   -- |   for all a > firstEnum: pred a >>= succ == Just a
   -- |   for all a < lastEnum:  succ a >>= pred == Just a
+  -- |   
+  -- |   pred >=> succ >=> pred = pred
+  -- |   succ >=> pred >=> succ = succ
+  -- |   
+  -- |   toEnum (fromEnum a) = Just a
+  -- |   
+  -- |   for all a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)
+  -- |   for all a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)
+
+
   class (Ord a) <= Enum a where
     cardinality :: Cardinality a
 
@@ -191,7 +201,7 @@ module Data.Enum
     succ (Right b) = maybe (Nothing) (Just <<< Right) (succ b)
 
     pred (Left a) = maybe (Nothing) (Just <<< Left) (pred a)
-    pred (Right b) = maybe (Just $ Left lastEnum) (Just <<< Right) (pred b)    
+    pred (Right b) = maybe (Just $ Left lastEnum) (Just <<< Right) (pred b)
 
     toEnum = eitherToEnum cardinality cardinality
 
