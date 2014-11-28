@@ -43,4 +43,12 @@
 
     defaultToEnum :: forall a. (a -> Maybe a) -> a -> Number -> Maybe a
 
+    enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+
+    enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+
+    intFromTo :: Number -> Number -> [Number]
+
+    intStepFromTo :: Number -> Number -> Number -> [Number]
+
     runCardinality :: forall a. Cardinality a -> Number

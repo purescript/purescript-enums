@@ -13,6 +13,10 @@ module Data.Enum
   , defaultPred
   , defaultToEnum
   , defaultFromEnum
+  , intFromTo
+  , intStepFromTo
+  , enumFromTo
+  , enumFromThenTo
   ) where
 
   import Data.Maybe
@@ -20,6 +24,7 @@ module Data.Enum
   import Data.Tuple
   import Data.Char
   import Data.Maybe.Unsafe
+  import Data.Unfoldable
 
   newtype Cardinality a = Cardinality Number 
 
@@ -83,6 +88,39 @@ module Data.Enum
   -- | defaultFromEnum pred = fromEnum
   defaultFromEnum :: forall a. (a -> Maybe a) -> (a -> Number)
   defaultFromEnum pred' e = maybe 0 (\prd -> defaultFromEnum pred' prd + 1) (pred' e)
+
+  -- Property: fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e
+  -- Following from the propery of intFromTo, We are sure all elements in intFromTo (fromEnum a) (fromEnum b) are Justs.
+  enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+  enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
+    where a' = fromEnum a
+          b' = fromEnum b
+
+  -- [a,b..c]
+  -- Correctness for using fromJust is the same as for enumFromTo.
+  enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+  enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
+    where a' = fromEnum a
+          b' = fromEnum b
+          c' = fromEnum c
+
+  -- Property: forall e in intFromTo a b: a <= e <= b
+  -- intFromTo :: Int -> Int -> List Int
+  intFromTo :: Number -> Number -> [Number]
+  intFromTo = intStepFromTo 1
+
+  -- Property: forall e in intStepFromTo step a b: a <= e <= b
+  -- intStepFromTo :: Int -> Int -> Int -> List Int
+  intStepFromTo :: Number -> Number -> Number -> [Number]
+  intStepFromTo step from to =
+    unfoldr (\e ->
+              if e <= to
+              then Just $ Tuple e (e + step)  -- Output the value e, set the next state to (e + step)
+              else Nothing                    -- End of the collection.
+            ) from -- starting value/state.
+
+
+  -- | Instances
 
   instance enumChar :: Enum Char where
     cardinality = Cardinality (65535 + 1)
