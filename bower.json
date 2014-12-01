@@ -19,9 +19,9 @@
   ],
   "dependencies": {
     "purescript-maybe": "~0.2.1",
-    "purescript-tuples": "~0.2.2",
+    "purescript-tuples": "~0.2.3",
     "purescript-either": "~0.1.4",
-    "purescript-strings": "~0.4.1",
-    "purescript-unfoldable": "~0.1.0"
+    "purescript-strings": "~0.4.2",
+    "purescript-unfoldable": "~0.2.0"
   }
 }
