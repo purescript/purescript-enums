@@ -9,6 +9,14 @@ module Data.Enum
   , runCardinality
   , succ
   , toEnum
+  , defaultSucc
+  , defaultPred
+  , defaultToEnum
+  , defaultFromEnum
+  , intFromTo
+  , intStepFromTo
+  , enumFromTo
+  , enumFromThenTo
   ) where
 
   import Data.Maybe
@@ -16,6 +24,7 @@ module Data.Enum
   import Data.Tuple
   import Data.Char
   import Data.Maybe.Unsafe
+  import Data.Unfoldable
 
   newtype Cardinality a = Cardinality Number 
 
@@ -28,13 +37,23 @@ module Data.Enum
   -- | to easily compute successor and predecessor elements. e.g. DayOfWeek, etc.
   -- |
   -- | Laws:
-  -- |   succ firstEnum >>= succ >>= succ ... succ [cardinality times] == lastEnum
-  -- |   pred lastEnum  >>= pred >>= pred ... pred [cardinality times] == firstEnum
-  -- |
-  -- |   Just $ e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2
-  -- |
+  -- |   succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum
+  -- |   pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum
+  -- |   
+  -- |   e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2
+  -- |   
   -- |   for all a > firstEnum: pred a >>= succ == Just a
   -- |   for all a < lastEnum:  succ a >>= pred == Just a
+  -- |   
+  -- |   pred >=> succ >=> pred = pred
+  -- |   succ >=> pred >=> succ = succ
+  -- |   
+  -- |   toEnum (fromEnum a) = Just a
+  -- |   
+  -- |   for all a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)
+  -- |   for all a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)
+
+
   class (Ord a) <= Enum a where
     cardinality :: Cardinality a
 
@@ -46,16 +65,62 @@ module Data.Enum
 
     pred :: a -> Maybe a
 
-  toEnum :: forall a. (Enum a) => Number -> Maybe a
-  toEnum n | n < 0 = Nothing
-  toEnum 0         = Just firstEnum
-  toEnum n         = toEnum (n - 1) >>= succ
+    toEnum :: Number -> Maybe a
+    
+    fromEnum :: a -> Number
 
-  fromEnum :: forall a. (Enum a) => a -> Number
-  fromEnum e = maybe 0 ((+) 1 <<< fromEnum) (pred e)
+  -- | defaultSucc toEnum fromEnum = succ
+  defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> (a -> Maybe a)
+  defaultSucc toEnum' fromEnum' a = toEnum' (fromEnum' a + 1)
 
-  maybeCardinality :: forall a. (Enum a) => Cardinality a -> Cardinality (Maybe a)
-  maybeCardinality c = Cardinality $ 1 + (runCardinality c)
+  -- | defaultPred toEnum fromEnum = pred
+  defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> (a -> Maybe a)
+  defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - 1)
+
+  -- | Runs in O(n) where n is (fromEnum a)
+  -- | defaultToEnum succ firstEnum = toEnum
+  defaultToEnum :: forall a. (a -> Maybe a) -> a -> (Number -> Maybe a)
+  defaultToEnum succ' firstEnum' n | n < 0 = Nothing
+  defaultToEnum succ' firstEnum' 0         = Just firstEnum'
+  defaultToEnum succ' firstEnum' n         = defaultToEnum succ' firstEnum' (n - 1) >>= succ'
+
+  -- | Runs in O(n) where n is (fromEnum a)
+  -- | defaultFromEnum pred = fromEnum
+  defaultFromEnum :: forall a. (a -> Maybe a) -> (a -> Number)
+  defaultFromEnum pred' e = maybe 0 (\prd -> defaultFromEnum pred' prd + 1) (pred' e)
+
+  -- Property: fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e
+  -- Following from the propery of intFromTo, We are sure all elements in intFromTo (fromEnum a) (fromEnum b) are Justs.
+  enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+  enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
+    where a' = fromEnum a
+          b' = fromEnum b
+
+  -- [a,b..c]
+  -- Correctness for using fromJust is the same as for enumFromTo.
+  enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+  enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
+    where a' = fromEnum a
+          b' = fromEnum b
+          c' = fromEnum c
+
+  -- Property: forall e in intFromTo a b: a <= e <= b
+  -- intFromTo :: Int -> Int -> List Int
+  intFromTo :: Number -> Number -> [Number]
+  intFromTo = intStepFromTo 1
+
+  -- Property: forall e in intStepFromTo step a b: a <= e <= b
+  -- intStepFromTo :: Int -> Int -> Int -> List Int
+  intStepFromTo :: Number -> Number -> Number -> [Number]
+  intStepFromTo step from to =
+    unfoldr (\e ->
+              if e <= to
+              then Just $ Tuple e (e + step)  -- Output the value e, set the next state to (e + step)
+              else Nothing                    -- End of the collection.
+            ) from -- starting value/state.
+
+
+  -- | Instances
 
   instance enumChar :: Enum Char where
     cardinality = Cardinality (65535 + 1)
@@ -64,9 +129,21 @@ module Data.Enum
 
     lastEnum = fromCharCode 65535
 
-    succ c = if c == lastEnum then Nothing else Just $ (fromCharCode <<< ((+) 1) <<< toCharCode) c
+    succ = defaultSucc charToEnum charFromEnum
 
-    pred c = if c == firstEnum then Nothing else Just $ (fromCharCode <<< ((+) (-1)) <<< toCharCode) c
+    pred = defaultPred charToEnum charFromEnum
+
+    toEnum = charToEnum
+
+    fromEnum = charFromEnum
+
+  -- To avoid a compiler bug - can't pass self-class functions, workaround: need to make a concrete function.
+  charToEnum :: Number -> Maybe Char
+  charToEnum n | n >= 0 && n <= 65535 = Just $ fromCharCode n
+  charToEnum _ = Nothing
+
+  charFromEnum :: Char -> Number
+  charFromEnum = toCharCode
 
   instance enumMaybe :: (Enum a) => Enum (Maybe a) where
     cardinality = maybeCardinality cardinality
@@ -81,18 +158,50 @@ module Data.Enum
     pred Nothing = Nothing
     pred (Just a) = Just <$> pred a
 
+    toEnum = maybeToEnum cardinality
+
+    fromEnum Nothing = 0
+    fromEnum (Just e) = fromEnum e + 1
+  
+  maybeToEnum :: forall a. (Enum a) => Cardinality a -> Number -> Maybe (Maybe a)
+  maybeToEnum carda n | n <= runCardinality (maybeCardinality carda) = 
+    if n == 0 
+    then Just $ Nothing
+    else Just $ toEnum (n - 1)
+  maybeToEnum _    _ = Nothing
+
+  maybeCardinality :: forall a. (Enum a) => Cardinality a -> Cardinality (Maybe a)
+  maybeCardinality c = Cardinality $ 1 + (runCardinality c)
+
   instance enumBoolean :: Enum Boolean where
     cardinality = Cardinality 2
    
-    firstEnum = false
+    firstEnum = booleanFirstEnum
 
     lastEnum = true
 
-    succ false = Just true
-    succ _     = Nothing
+    succ = booleanSucc
 
-    pred true  = Just false
-    pred _     = Nothing
+    pred = booleanPred
+
+    toEnum = defaultToEnum booleanSucc booleanFirstEnum
+
+    fromEnum = defaultFromEnum booleanPred
+
+  booleanFirstEnum :: Boolean
+  booleanFirstEnum = false
+
+  booleanSucc :: Boolean -> Maybe Boolean
+  booleanSucc false = Just true
+  booleanSucc _     = Nothing
+
+  booleanPred :: Boolean -> Maybe Boolean
+  booleanPred true  = Just false
+  booleanPred _     = Nothing
+
+  -- Until we get Int, floor and div in the prelude
+  foreign import floor "function floor(n){ return Math.floor(n); }" :: Number -> Number
+  div a b = floor (a / b)
 
   instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b) where
     cardinality = tupleCardinality cardinality cardinality
@@ -104,6 +213,17 @@ module Data.Enum
     succ (Tuple a b) = maybe (flip Tuple firstEnum <$> succ a) (Just <<< Tuple a) (succ b)
 
     pred (Tuple a b) = maybe (flip Tuple firstEnum <$> pred a) (Just <<< Tuple a) (pred b)
+
+    toEnum = tupleToEnum cardinality
+
+    fromEnum = tupleFromEnum cardinality
+
+  -- All of these are as a workaround for ScopedTypeVariables. (not yet supported in Purescript)
+  tupleToEnum :: forall a b. (Enum a, Enum b) => Cardinality b -> Number -> Maybe (Tuple a b)
+  tupleToEnum cardb n = Tuple <$> (toEnum (n `div` (runCardinality cardb))) <*> (toEnum (n % (runCardinality cardb)))
+
+  tupleFromEnum :: forall a b. (Enum a, Enum b) => Cardinality b -> Tuple a b -> Number
+  tupleFromEnum cardb (Tuple a b) = (fromEnum a) * runCardinality cardb + fromEnum b
 
   tupleCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Tuple a b)
   tupleCardinality l r = Cardinality $ (runCardinality l) * (runCardinality r)
@@ -121,5 +241,21 @@ module Data.Enum
     pred (Left a) = maybe (Nothing) (Just <<< Left) (pred a)
     pred (Right b) = maybe (Just $ Left lastEnum) (Just <<< Right) (pred b)
 
+    toEnum = eitherToEnum cardinality cardinality
+
+    fromEnum = eitherFromEnum cardinality
+
+  eitherToEnum :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Number -> Maybe (Either a b)
+  eitherToEnum carda cardb n = 
+        if n >= 0 && n < runCardinality carda
+        then Left <$> toEnum n
+        else if n >= (runCardinality carda) && n < runCardinality (eitherCardinality carda cardb)
+             then Right <$> toEnum (n - runCardinality carda)
+             else Nothing
+
+  eitherFromEnum :: forall a b. (Enum a, Enum b) => Cardinality a -> (Either a b -> Number)
+  eitherFromEnum carda (Left a) = fromEnum a
+  eitherFromEnum carda (Right b) = fromEnum b + runCardinality carda
+            
   eitherCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Either a b)
   eitherCardinality l r = Cardinality $ (runCardinality l) + (runCardinality r)
