@@ -34,24 +34,20 @@ module Data.Enum
   -- | Type class for enumerations. This should not be considered a part of a
   -- | numeric hierarchy, ala Haskell. Rather, this is a type class for small,
   -- | ordered sum types with statically-determined cardinality and the ability 
-  -- | to easily compute successor and predecessor elements. e.g. DayOfWeek, etc.
+  -- | to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
   -- |
   -- | Laws:
-  -- |   succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum
-  -- |   pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum
-  -- |   
-  -- |   e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2
-  -- |   
-  -- |   for all a > firstEnum: pred a >>= succ == Just a
-  -- |   for all a < lastEnum:  succ a >>= pred == Just a
-  -- |   
-  -- |   pred >=> succ >=> pred = pred
-  -- |   succ >=> pred >=> succ = succ
-  -- |   
-  -- |   toEnum (fromEnum a) = Just a
-  -- |   
-  -- |   for all a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)
-  -- |   for all a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)
+  -- |
+  -- | - ```succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum```
+  -- | - ```pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum```
+  -- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
+  -- | - ```forall a > firstEnum: pred a >>= succ == Just a```
+  -- | - ```forall a < lastEnum:  succ a >>= pred == Just a```
+  -- | - ```pred >=> succ >=> pred = pred```
+  -- | - ```succ >=> pred >=> succ = succ```
+  -- | - ```toEnum (fromEnum a) = Just a```
+  -- | - ```forall a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)```
+  -- | - ```forall a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
 
   class (Ord a) <= Enum a where
@@ -69,48 +65,50 @@ module Data.Enum
     
     fromEnum :: a -> Number
 
-  -- | defaultSucc toEnum fromEnum = succ
+  -- | ```defaultSucc toEnum fromEnum = succ```
   defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> (a -> Maybe a)
   defaultSucc toEnum' fromEnum' a = toEnum' (fromEnum' a + 1)
 
-  -- | defaultPred toEnum fromEnum = pred
+  -- | ```defaultPred toEnum fromEnum = pred```
   defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> (a -> Maybe a)
   defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - 1)
 
-  -- | Runs in O(n) where n is (fromEnum a)
-  -- | defaultToEnum succ firstEnum = toEnum
+  -- | Runs in `O(n)` where `n` is `fromEnum a`
+  -- |
+  -- | ```defaultToEnum succ firstEnum = toEnum```
   defaultToEnum :: forall a. (a -> Maybe a) -> a -> (Number -> Maybe a)
   defaultToEnum succ' firstEnum' n | n < 0 = Nothing
   defaultToEnum succ' firstEnum' 0         = Just firstEnum'
   defaultToEnum succ' firstEnum' n         = defaultToEnum succ' firstEnum' (n - 1) >>= succ'
 
-  -- | Runs in O(n) where n is (fromEnum a)
-  -- | defaultFromEnum pred = fromEnum
+  -- | Runs in `O(n)` where `n` is `fromEnum a`
+  -- |
+  -- | ```defaultFromEnum pred = fromEnum```
   defaultFromEnum :: forall a. (a -> Maybe a) -> (a -> Number)
   defaultFromEnum pred' e = maybe 0 (\prd -> defaultFromEnum pred' prd + 1) (pred' e)
 
-  -- Property: fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e
-  -- Following from the propery of intFromTo, We are sure all elements in intFromTo (fromEnum a) (fromEnum b) are Justs.
+  -- | Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
+  -- |
+  -- | Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
   enumFromTo :: forall a. (Enum a) => a -> a -> [a]
   enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
     where a' = fromEnum a
           b' = fromEnum b
 
-  -- [a,b..c]
-  -- Correctness for using fromJust is the same as for enumFromTo.
+  -- | `[a,b..c]`
+  -- | 
+  -- | Correctness for using `fromJust` is the same as for `enumFromTo`.
   enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
   enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
     where a' = fromEnum a
           b' = fromEnum b
           c' = fromEnum c
 
-  -- Property: forall e in intFromTo a b: a <= e <= b
-  -- intFromTo :: Int -> Int -> List Int
+  -- | Property: ```forall e in intFromTo a b: a <= e <= b```
   intFromTo :: Number -> Number -> [Number]
   intFromTo = intStepFromTo 1
 
-  -- Property: forall e in intStepFromTo step a b: a <= e <= b
-  -- intStepFromTo :: Int -> Int -> Int -> List Int
+  -- | Property: ```forall e in intStepFromTo step a b: a <= e <= b```
   intStepFromTo :: Number -> Number -> Number -> [Number]
   intStepFromTo step from to =
     unfoldr (\e ->
@@ -137,7 +135,7 @@ module Data.Enum
 
     fromEnum = charFromEnum
 
-  -- To avoid a compiler bug - can't pass self-class functions, workaround: need to make a concrete function.
+  -- | To avoid a compiler bug - can't pass self-class functions, workaround: need to make a concrete function.
   charToEnum :: Number -> Maybe Char
   charToEnum n | n >= 0 && n <= 65535 = Just $ fromCharCode n
   charToEnum _ = Nothing
@@ -199,8 +197,9 @@ module Data.Enum
   booleanPred true  = Just false
   booleanPred _     = Nothing
 
-  -- Until we get Int, floor and div in the prelude
+  -- | Until we get `Int`, `floor` and `div` in the Prelude
   foreign import floor "function floor(n){ return Math.floor(n); }" :: Number -> Number
+
   div a b = floor (a / b)
 
   instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b) where
@@ -218,7 +217,7 @@ module Data.Enum
 
     fromEnum = tupleFromEnum cardinality
 
-  -- All of these are as a workaround for ScopedTypeVariables. (not yet supported in Purescript)
+  -- | All of these are as a workaround for `ScopedTypeVariables`. (not yet supported in Purescript)
   tupleToEnum :: forall a b. (Enum a, Enum b) => Cardinality b -> Number -> Maybe (Tuple a b)
   tupleToEnum cardb n = Tuple <$> (toEnum (n `div` (runCardinality cardb))) <*> (toEnum (n % (runCardinality cardb)))
 
