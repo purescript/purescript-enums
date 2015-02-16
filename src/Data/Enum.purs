@@ -115,10 +115,9 @@ module Data.Enum
               if e <= to
               then Just $ Tuple e (e + step)  -- Output the value e, set the next state to (e + step)
               else Nothing                    -- End of the collection.
-            ) from -- starting value/state.
+            ) from 
 
-
-  -- | Instances
+  -- | ## Instances
 
   instance enumChar :: Enum Char where
     cardinality = Cardinality (65535 + 1)
