@@ -2,53 +2,155 @@
 
 ## Module Data.Enum
 
-### Types
+#### `Cardinality`
 
-    newtype Cardinality a where
-      Cardinality :: Number -> Cardinality a
-
-
-### Type Classes
-
-    class (Ord a) <= Enum a where
-      cardinality :: Cardinality a
-      firstEnum :: a
-      lastEnum :: a
-      succ :: a -> Maybe a
-      pred :: a -> Maybe a
-      toEnum :: Number -> Maybe a
-      fromEnum :: a -> Number
+``` purescript
+newtype Cardinality a
+  = Cardinality Number
+```
 
 
-### Type Class Instances
+#### `runCardinality`
 
-    instance enumBoolean :: Enum Boolean
-
-    instance enumChar :: Enum Char
-
-    instance enumEither :: (Enum a, Enum b) => Enum (Either a b)
-
-    instance enumMaybe :: (Enum a) => Enum (Maybe a)
-
-    instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)
+``` purescript
+runCardinality :: forall a. Cardinality a -> Number
+```
 
 
-### Values
+#### `Enum`
 
-    defaultFromEnum :: forall a. (a -> Maybe a) -> a -> Number
+``` purescript
+class (Ord a) <= Enum a where
+  cardinality :: Cardinality a
+  firstEnum :: a
+  lastEnum :: a
+  succ :: a -> Maybe a
+  pred :: a -> Maybe a
+  toEnum :: Number -> Maybe a
+  fromEnum :: a -> Number
+```
 
-    defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+Type class for enumerations. This should not be considered a part of a
+numeric hierarchy, ala Haskell. Rather, this is a type class for small,
+ordered sum types with statically-determined cardinality and the ability 
+to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
 
-    defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+Laws:
 
-    defaultToEnum :: forall a. (a -> Maybe a) -> a -> Number -> Maybe a
+- ```succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum```
+- ```pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum```
+- ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
+- ```forall a > firstEnum: pred a >>= succ == Just a```
+- ```forall a < lastEnum:  succ a >>= pred == Just a```
+- ```pred >=> succ >=> pred = pred```
+- ```succ >=> pred >=> succ = succ```
+- ```toEnum (fromEnum a) = Just a```
+- ```forall a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)```
+- ```forall a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
-    enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+#### `defaultSucc`
 
-    enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+``` purescript
+defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+```
 
-    intFromTo :: Number -> Number -> [Number]
+```defaultSucc toEnum fromEnum = succ```
 
-    intStepFromTo :: Number -> Number -> Number -> [Number]
+#### `defaultPred`
 
-    runCardinality :: forall a. Cardinality a -> Number
+``` purescript
+defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+```
+
+```defaultPred toEnum fromEnum = pred```
+
+#### `defaultToEnum`
+
+``` purescript
+defaultToEnum :: forall a. (a -> Maybe a) -> a -> Number -> Maybe a
+```
+
+Runs in `O(n)` where `n` is `fromEnum a`
+
+```defaultToEnum succ firstEnum = toEnum```
+
+#### `defaultFromEnum`
+
+``` purescript
+defaultFromEnum :: forall a. (a -> Maybe a) -> a -> Number
+```
+
+Runs in `O(n)` where `n` is `fromEnum a`
+
+```defaultFromEnum pred = fromEnum```
+
+#### `enumFromTo`
+
+``` purescript
+enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+```
+
+Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
+
+Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
+
+#### `enumFromThenTo`
+
+``` purescript
+enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+```
+
+`[a,b..c]`
+
+Correctness for using `fromJust` is the same as for `enumFromTo`.
+
+#### `intFromTo`
+
+``` purescript
+intFromTo :: Number -> Number -> [Number]
+```
+
+Property: ```forall e in intFromTo a b: a <= e <= b```
+
+#### `intStepFromTo`
+
+``` purescript
+intStepFromTo :: Number -> Number -> Number -> [Number]
+```
+
+Property: ```forall e in intStepFromTo step a b: a <= e <= b```
+
+#### `enumChar`
+
+``` purescript
+instance enumChar :: Enum Char
+```
+
+## Instances
+
+#### `enumMaybe`
+
+``` purescript
+instance enumMaybe :: (Enum a) => Enum (Maybe a)
+```
+
+
+#### `enumBoolean`
+
+``` purescript
+instance enumBoolean :: Enum Boolean
+```
+
+
+#### `enumTuple`
+
+``` purescript
+instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)
+```
+
+
+#### `enumEither`
+
+``` purescript
+instance enumEither :: (Enum a, Enum b) => Enum (Either a b)
+```
