@@ -6,52 +6,50 @@
 
 ``` purescript
 newtype Cardinality a
-  = Cardinality Number
+  = Cardinality Int
 ```
 
 
 #### `runCardinality`
 
 ``` purescript
-runCardinality :: forall a. Cardinality a -> Number
+runCardinality :: forall a. Cardinality a -> Int
 ```
 
 
 #### `Enum`
 
 ``` purescript
-class (Ord a) <= Enum a where
+class (Bounded a) <= Enum a where
   cardinality :: Cardinality a
-  firstEnum :: a
-  lastEnum :: a
   succ :: a -> Maybe a
   pred :: a -> Maybe a
-  toEnum :: Number -> Maybe a
-  fromEnum :: a -> Number
+  toEnum :: Int -> Maybe a
+  fromEnum :: a -> Int
 ```
 
 Type class for enumerations. This should not be considered a part of a
 numeric hierarchy, ala Haskell. Rather, this is a type class for small,
-ordered sum types with statically-determined cardinality and the ability 
+ordered sum types with statically-determined cardinality and the ability
 to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
 
 Laws:
 
-- ```succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum```
-- ```pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum```
+- ```succ bottom >>= succ >>= succ ... succ [cardinality - 1 times] == top```
+- ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
 - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
-- ```forall a > firstEnum: pred a >>= succ == Just a```
-- ```forall a < lastEnum:  succ a >>= pred == Just a```
+- ```forall a > bottom: pred a >>= succ == Just a```
+- ```forall a < top:  succ a >>= pred == Just a```
 - ```pred >=> succ >=> pred = pred```
 - ```succ >=> pred >=> succ = succ```
 - ```toEnum (fromEnum a) = Just a```
-- ```forall a > firstEnum: fromEnum <$> pred a = Just (fromEnum a - 1)```
-- ```forall a < lastEnum:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+- ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
+- ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
 #### `defaultSucc`
 
 ``` purescript
-defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+defaultSucc :: forall a. (Int -> Maybe a) -> (a -> Int) -> a -> Maybe a
 ```
 
 ```defaultSucc toEnum fromEnum = succ```
@@ -59,7 +57,7 @@ defaultSucc :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
 #### `defaultPred`
 
 ``` purescript
-defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
+defaultPred :: forall a. (Int -> Maybe a) -> (a -> Int) -> a -> Maybe a
 ```
 
 ```defaultPred toEnum fromEnum = pred```
@@ -67,17 +65,17 @@ defaultPred :: forall a. (Number -> Maybe a) -> (a -> Number) -> a -> Maybe a
 #### `defaultToEnum`
 
 ``` purescript
-defaultToEnum :: forall a. (a -> Maybe a) -> a -> Number -> Maybe a
+defaultToEnum :: forall a. (a -> Maybe a) -> a -> Int -> Maybe a
 ```
 
 Runs in `O(n)` where `n` is `fromEnum a`
 
-```defaultToEnum succ firstEnum = toEnum```
+```defaultToEnum succ bottom = toEnum```
 
 #### `defaultFromEnum`
 
 ``` purescript
-defaultFromEnum :: forall a. (a -> Maybe a) -> a -> Number
+defaultFromEnum :: forall a. (a -> Maybe a) -> a -> Int
 ```
 
 Runs in `O(n)` where `n` is `fromEnum a`
@@ -107,7 +105,7 @@ Correctness for using `fromJust` is the same as for `enumFromTo`.
 #### `intFromTo`
 
 ``` purescript
-intFromTo :: Number -> Number -> [Number]
+intFromTo :: Int -> Int -> [Int]
 ```
 
 Property: ```forall e in intFromTo a b: a <= e <= b```
@@ -115,7 +113,7 @@ Property: ```forall e in intFromTo a b: a <= e <= b```
 #### `intStepFromTo`
 
 ``` purescript
-intStepFromTo :: Number -> Number -> Number -> [Number]
+intStepFromTo :: Int -> Int -> Int -> [Int]
 ```
 
 Property: ```forall e in intStepFromTo step a b: a <= e <= b```

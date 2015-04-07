@@ -22,6 +22,7 @@
     "purescript-tuples": "~0.3.0",
     "purescript-either": "~0.1.4",
     "purescript-strings": "~0.4.2",
-    "purescript-unfoldable": "~0.3.0"
+    "purescript-unfoldable": "~0.3.0",
+    "purescript-integers": "~0.1.0"
   }
 }
