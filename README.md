@@ -37,8 +37,8 @@ to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
 
 Laws:
 
-- ```succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == lastEnum```
-- ```pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == firstEnum```
+- ```succ firstEnum >>= succ >>= succ ... succ [cardinality - 1 times] == Just lastEnum```
+- ```pred lastEnum  >>= pred >>= pred ... pred [cardinality - 1 times] == Just firstEnum```
 - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
 - ```forall a > firstEnum: pred a >>= succ == Just a```
 - ```forall a < lastEnum:  succ a >>= pred == Just a```
