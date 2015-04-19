@@ -23,7 +23,7 @@ import Data.Tuple
 import Data.Char
 import Data.Maybe.Unsafe
 import Data.Unfoldable
-import Data.Int
+import Data.Int (Int(), fromNumber)
 
 newtype Cardinality a = Cardinality Int
 
