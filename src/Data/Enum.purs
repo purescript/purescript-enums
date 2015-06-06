@@ -17,13 +17,15 @@ module Data.Enum
   , enumFromThenTo
   ) where
 
+import Prelude
+
 import Data.Maybe
 import Data.Either
 import Data.Tuple
 import Data.Char
 import Data.Maybe.Unsafe
 import Data.Unfoldable
-import Data.Int (Int(), fromNumber)
+import Data.Int (fromNumber)
 
 newtype Cardinality a = Cardinality Int
 
@@ -81,7 +83,7 @@ defaultFromEnum pred' e = maybe zero (\prd -> defaultFromEnum pred' prd + one) (
 -- | Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
 -- |
 -- | Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
-enumFromTo :: forall a. (Enum a) => a -> a -> [a]
+enumFromTo :: forall a. (Enum a) => a -> a -> Array a
 enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
   where a' = fromEnum a
         b' = fromEnum b
@@ -89,18 +91,18 @@ enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
 -- | `[a,b..c]`
 -- |
 -- | Correctness for using `fromJust` is the same as for `enumFromTo`.
-enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> [a]
+enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> Array a
 enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
   where a' = fromEnum a
         b' = fromEnum b
         c' = fromEnum c
 
 -- | Property: ```forall e in intFromTo a b: a <= e <= b```
-intFromTo :: Int -> Int -> [Int]
+intFromTo :: Int -> Int -> Array Int
 intFromTo = intStepFromTo one
 
 -- | Property: ```forall e in intStepFromTo step a b: a <= e <= b```
-intStepFromTo :: Int -> Int -> Int -> [Int]
+intStepFromTo :: Int -> Int -> Int -> Array Int
 intStepFromTo step from to =
   unfoldr (\e ->
             if e <= to
@@ -111,7 +113,7 @@ intStepFromTo step from to =
 -- | ## Instances
 
 instance enumChar :: Enum Char where
-  cardinality = Cardinality (fromNumber (65535 + 1))
+  cardinality = Cardinality 65536
   succ = defaultSucc charToEnum charFromEnum
   pred = defaultPred charToEnum charFromEnum
   toEnum = charToEnum
@@ -119,7 +121,7 @@ instance enumChar :: Enum Char where
 
 -- | To avoid a compiler bug - can't pass self-class functions, workaround: need to make a concrete function.
 charToEnum :: Int -> Maybe Char
-charToEnum n | n >= zero && n <= (fromNumber 65535) = Just $ fromCharCode n
+charToEnum n | n >= 0 && n <= 65535 = Just $ fromCharCode n
 charToEnum _ = Nothing
 
 charFromEnum :: Char -> Int
@@ -146,7 +148,7 @@ maybeCardinality :: forall a. (Enum a) => Cardinality a -> Cardinality (Maybe a)
 maybeCardinality c = Cardinality $ one + (runCardinality c)
 
 instance enumBoolean :: Enum Boolean where
-  cardinality = Cardinality (fromNumber 2)
+  cardinality = Cardinality 2
   succ = booleanSucc
   pred = booleanPred
   toEnum = defaultToEnum booleanSucc bottom
