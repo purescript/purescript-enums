@@ -6,23 +6,23 @@
     "purescript"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/purescript/purescript-enums.git"
+  },
   "ignore": [
     "**/.*",
     "bower_components",
     "node_modules",
     "output",
-    "tests",
-    "tmp",
+    "test",
     "bower.json",
-    "Gruntfile.js",
+    "gulpfile.js",
     "package.json"
   ],
   "dependencies": {
-    "purescript-integers": "~0.2.0",
-    "purescript-maybe": "~0.3.0",
-    "purescript-tuples": "~0.4.0",
-    "purescript-either": "~0.2.0",
-    "purescript-strings": "~0.5.0",
-    "purescript-unfoldable": "~0.4.0"
+    "purescript-either": "^0.2.0",
+    "purescript-strings": "^0.5.0",
+    "purescript-unfoldable": "^0.4.0"
   }
 }

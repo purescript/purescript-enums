@@ -18,14 +18,12 @@ module Data.Enum
   ) where
 
 import Prelude
-
-import Data.Maybe
+import Data.Char (fromCharCode, toCharCode)
 import Data.Either
-import Data.Tuple
-import Data.Char
+import Data.Maybe
 import Data.Maybe.Unsafe
+import Data.Tuple
 import Data.Unfoldable
-import Data.Int (fromNumber)
 
 newtype Cardinality a = Cardinality Int
 
