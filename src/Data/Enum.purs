@@ -152,7 +152,9 @@ instance enumMaybe :: (Finite a) => Enum (Maybe a) where
   succ Nothing = Just $ bottom
   succ (Just a) = Just <$> succ a
   pred Nothing = Nothing
-  pred (Just a) = Just <$> pred a -- TODO JB this doesn't seem right, I think we skip over "Just Nothing"
+  pred (Just a) = Just $ case pred a of
+    Nothing -> Nothing
+    m@(Just _) -> m
   toEnum = maybeToEnum cardinality
   fromEnum Nothing = zero
   fromEnum (Just e) = fromEnum e + one
