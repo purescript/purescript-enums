@@ -39,13 +39,9 @@ runCardinality (Cardinality a) = a
 -- | Laws:
 -- |
 -- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
--- | - ```forall a > bottom: pred a >>= succ == Just a```
--- | - ```forall a < top:  succ a >>= pred == Just a```
 -- | - ```pred >=> succ >=> pred = pred```
 -- | - ```succ >=> pred >=> succ = succ```
 -- | - ```toEnum (fromEnum a) = Just a```
--- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
--- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
 class Enum a where
   succ :: a -> Maybe a
@@ -114,6 +110,10 @@ intStepFromTo step from to =
 -- |
 -- | - ```succ bottom >>= succ >>= succ ... succ [cardinality - 1 times] == top```
 -- | - ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
+-- | - ```forall a > bottom: pred a >>= succ == Just a```
+-- | - ```forall a < top:  succ a >>= pred == Just a```
+-- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
+-- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
 class (Bounded a, Enum a) <= Finite a where
   cardinality :: Cardinality a
