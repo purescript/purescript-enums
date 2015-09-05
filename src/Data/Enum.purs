@@ -149,7 +149,7 @@ instance finiteChar :: Finite Char where
 
 -- TODO JB Finite is too restrictive on a, all we need is bottom
 instance enumMaybe :: (Finite a) => Enum (Maybe a) where
-  succ Nothing = Just $ bottom
+  succ Nothing = Just $ Just bottom
   succ (Just a) = Just <$> succ a
   pred Nothing = Nothing
   pred (Just a) = Just $ pred a
