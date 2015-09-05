@@ -120,6 +120,16 @@ class (Bounded a, Enum a) <= Finite a where
 
 -- | ## Instances
 
+instance enumUnit :: Enum Unit where
+  succ = const Nothing
+  pred = const Nothing
+  toEnum 0 = Just unit
+  toEnum _ = Nothing
+  fromEnum = const 0
+
+instance finiteUnit :: Finite Unit where
+  cardinality = Cardinality 1
+
 instance enumChar :: Enum Char where
   succ = defaultSucc charToEnum charFromEnum
   pred = defaultPred charToEnum charFromEnum
