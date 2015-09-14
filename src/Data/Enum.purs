@@ -10,6 +10,7 @@ module Data.Enum
   , toEnum
   , defaultSucc
   , defaultPred
+  , defaultCardinality
   , defaultToEnum
   , defaultFromEnum
   , intFromTo
@@ -38,16 +39,12 @@ runCardinality (Cardinality a) = a
 -- |
 -- | Laws:
 -- |
--- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
 -- | - ```pred >=> succ >=> pred = pred```
 -- | - ```succ >=> pred >=> succ = succ```
--- | - ```toEnum (fromEnum a) = Just a```
 
 class Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
-  toEnum :: Int -> Maybe a
-  fromEnum :: a -> Int
 
 -- | ```defaultSucc toEnum fromEnum = succ```
 defaultSucc :: forall a. (Int -> Maybe a) -> (a -> Int) -> (a -> Maybe a)
@@ -57,24 +54,11 @@ defaultSucc toEnum' fromEnum' a = toEnum' (fromEnum' a + one)
 defaultPred :: forall a. (Int -> Maybe a) -> (a -> Int) -> (a -> Maybe a)
 defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - one)
 
--- | Runs in `O(n)` where `n` is `fromEnum a`
--- |
--- | ```defaultToEnum succ bottom = toEnum```
-defaultToEnum :: forall a. (a -> Maybe a) -> a -> (Int -> Maybe a)
-defaultToEnum succ' bottom' n | n < zero = Nothing
-                              | n == zero = Just bottom'
-                              | otherwise = defaultToEnum succ' bottom' (n - one) >>= succ'
-
--- | Runs in `O(n)` where `n` is `fromEnum a`
--- |
--- | ```defaultFromEnum pred = fromEnum```
-defaultFromEnum :: forall a. (a -> Maybe a) -> (a -> Int)
-defaultFromEnum pred' e = maybe zero (\prd -> defaultFromEnum pred' prd + one) (pred' e)
-
 -- | Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
 -- |
 -- | Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
-enumFromTo :: forall a. (Enum a) => a -> a -> Array a
+-- TODO this shouldn't require BoundedEnum, just Enum
+enumFromTo :: forall a. (BoundedEnum a) => a -> a -> Array a
 enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
   where a' = fromEnum a
         b' = fromEnum b
@@ -82,7 +66,8 @@ enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
 -- | `[a,b..c]`
 -- |
 -- | Correctness for using `fromJust` is the same as for `enumFromTo`.
-enumFromThenTo :: forall a. (Enum a) => a -> a -> a -> Array a
+-- TODO this shouldn't require BoundedEnum, just Enum
+enumFromThenTo :: forall a. (BoundedEnum a) => a -> a -> a -> Array a
 enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
   where a' = fromEnum a
         b' = fromEnum b
@@ -114,27 +99,44 @@ intStepFromTo step from to =
 -- | - ```forall a < top:  succ a >>= pred == Just a```
 -- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
 -- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+-- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
+-- | - ```toEnum (fromEnum a) = Just a```
 
 class (Bounded a, Enum a) <= BoundedEnum a where
   cardinality :: Cardinality a
+  toEnum :: Int -> Maybe a
+  fromEnum :: a -> Int
+
+  -- | Runs in `O(n)` where `n` is `fromEnum a`
+  -- |
+  -- | ```defaultToEnum succ bottom = toEnum```
+-- TODO do we need to pass in bottom? It's a superclass if yes then we should pass it in for defaultCardinality too
+defaultToEnum :: forall a. (a -> Maybe a) -> a -> (Int -> Maybe a)
+defaultToEnum succ' bottom' n | n < zero = Nothing
+                              | n == zero = Just bottom'
+                              | otherwise = defaultToEnum succ' bottom' (n - one) >>= succ'
+
+  -- | Runs in `O(n)` where `n` is `fromEnum a`
+  -- |
+  -- | ```defaultFromEnum pred = fromEnum```
+defaultFromEnum :: forall a. (a -> Maybe a) -> (a -> Int)
+defaultFromEnum pred' e = maybe zero (\prd -> defaultFromEnum pred' prd + one) (pred' e)
 
 -- | ## Instances
 
 instance enumUnit :: Enum Unit where
   succ = const Nothing
   pred = const Nothing
+
+instance boundedEnumUnit :: BoundedEnum Unit where
+  cardinality = Cardinality 1
   toEnum 0 = Just unit
   toEnum _ = Nothing
   fromEnum = const 0
 
-instance boundedEnumUnit :: BoundedEnum Unit where
-  cardinality = Cardinality 1
-
 instance enumChar :: Enum Char where
   succ = defaultSucc charToEnum charFromEnum
   pred = defaultPred charToEnum charFromEnum
-  toEnum = charToEnum
-  fromEnum = charFromEnum
 
 -- | To avoid a compiler bug - can't pass self-class functions, workaround: need to make a concrete function.
 charToEnum :: Int -> Maybe Char
@@ -146,6 +148,8 @@ charFromEnum = toCharCode
 
 instance boundedEnumChar :: BoundedEnum Char where
   cardinality = Cardinality 65536
+  toEnum = charToEnum
+  fromEnum = charFromEnum
 
 -- TODO JB BoundedEnum is too restrictive on a, all we need is bottom
 instance enumMaybe :: (BoundedEnum a) => Enum (Maybe a) where
@@ -153,12 +157,12 @@ instance enumMaybe :: (BoundedEnum a) => Enum (Maybe a) where
   succ (Just a) = Just <$> succ a
   pred Nothing = Nothing
   pred (Just a) = Just $ pred a
-  toEnum = maybeToEnum cardinality
-  fromEnum Nothing = zero
-  fromEnum (Just e) = fromEnum e + one
 
 instance boundedEnumMaybe :: (BoundedEnum a) => BoundedEnum (Maybe a) where
   cardinality = maybeCardinality cardinality
+  toEnum = maybeToEnum cardinality
+  fromEnum Nothing = zero
+  fromEnum (Just e) = fromEnum e + one
 
 maybeToEnum :: forall a. (BoundedEnum a) => Cardinality a -> Int -> Maybe (Maybe a)
 maybeToEnum carda n | n <= runCardinality (maybeCardinality carda) =
@@ -173,11 +177,11 @@ maybeCardinality c = Cardinality $ one + (runCardinality c)
 instance enumBoolean :: Enum Boolean where
   succ = booleanSucc
   pred = booleanPred
-  toEnum = defaultToEnum booleanSucc bottom
-  fromEnum = defaultFromEnum booleanPred
 
 instance boundedEnumBoolean :: BoundedEnum Boolean where
   cardinality = Cardinality 2
+  toEnum = defaultToEnum booleanSucc bottom
+  fromEnum = defaultFromEnum booleanPred
 
 booleanSucc :: Boolean -> Maybe Boolean
 booleanSucc false = Just true
@@ -190,17 +194,19 @@ booleanPred _     = Nothing
 instance enumTuple :: (BoundedEnum a, BoundedEnum b) => Enum (Tuple a b) where
   succ (Tuple a b) = maybe (flip Tuple bottom <$> succ a) (Just <<< Tuple a) (succ b)
   pred (Tuple a b) = maybe (flip Tuple bottom <$> pred a) (Just <<< Tuple a) (pred b)
-  toEnum = tupleToEnum cardinality
-  fromEnum = tupleFromEnum cardinality
 
 instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tuple a b) where
   cardinality = tupleCardinality cardinality cardinality
+  toEnum = tupleToEnum cardinality
+  fromEnum = tupleFromEnum cardinality
 
 -- | All of these are as a workaround for `ScopedTypeVariables`. (not yet supported in Purescript)
-tupleToEnum :: forall a b. (Enum a, BoundedEnum b) => Cardinality b -> Int -> Maybe (Tuple a b)
+-- TODO we shouldn't need BoundedEnum on a
+tupleToEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality b -> Int -> Maybe (Tuple a b)
 tupleToEnum cardb n = Tuple <$> (toEnum (n / (runCardinality cardb))) <*> (toEnum (n `mod` (runCardinality cardb)))
 
-tupleFromEnum :: forall a b. (Enum a, BoundedEnum b) => Cardinality b -> Tuple a b -> Int
+-- TODO we shouldn't need BoundedEnum on a
+tupleFromEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality b -> Tuple a b -> Int
 tupleFromEnum cardb (Tuple a b) = (fromEnum a) * runCardinality cardb + fromEnum b
 
 tupleCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Tuple a b)
@@ -212,11 +218,11 @@ instance enumEither :: (BoundedEnum a, BoundedEnum b) => Enum (Either a b) where
   succ (Right b) = maybe (Nothing) (Just <<< Right) (succ b)
   pred (Left a) = maybe (Nothing) (Just <<< Left) (pred a)
   pred (Right b) = maybe (Just $ Left top) (Just <<< Right) (pred b)
-  toEnum = eitherToEnum cardinality cardinality
-  fromEnum = eitherFromEnum cardinality
 
 instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Either a b) where
   cardinality = eitherCardinality cardinality cardinality
+  toEnum = eitherToEnum cardinality cardinality
+  fromEnum = eitherFromEnum cardinality
 
 eitherToEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality a -> Cardinality b -> Int -> Maybe (Either a b)
 eitherToEnum carda cardb n =
@@ -226,7 +232,8 @@ eitherToEnum carda cardb n =
            then Right <$> toEnum (n - runCardinality carda)
            else Nothing
 
-eitherFromEnum :: forall a b. (Enum a, Enum b) => Cardinality a -> (Either a b -> Int)
+-- TODO this shouldn't require BoundedEnum
+eitherFromEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality a -> (Either a b -> Int)
 eitherFromEnum carda (Left a) = fromEnum a
 eitherFromEnum carda (Right b) = fromEnum b + runCardinality carda
 
