@@ -17,6 +17,8 @@ module Data.Enum
   , intStepFromTo
   , enumFromTo
   , enumFromThenTo
+  , upFrom
+  , downFrom
   ) where
 
 import Prelude
@@ -85,6 +87,14 @@ intStepFromTo step from to =
             then Just $ Tuple e (e + step)  -- Output the value e, set the next state to (e + step)
             else Nothing                    -- End of the collection.
           ) from
+
+diag a = Tuple a a
+
+upFrom :: forall a u. (Enum a, Unfoldable u) => a -> u a
+upFrom = unfoldr (map diag <<< succ)
+
+downFrom :: forall a u. (Enum a, Unfoldable u) => a -> u a
+downFrom = unfoldr (map diag <<< pred)
 
 -- | Type class for finite enumerations. This should not be considered a part of
 -- | a numeric hierarchy, ala Haskell. Rather, this is a type class for small,
