@@ -107,6 +107,13 @@ class (Bounded a, Enum a) <= BoundedEnum a where
   toEnum :: Int -> Maybe a
   fromEnum :: a -> Int
 
+-- | Runs in `O(n)` where `n` is `fromEnum top`
+-- |
+-- | ```defaultCardinality = cardinality```
+defaultCardinality :: forall a. (Bounded a, Enum a) => Cardinality a
+defaultCardinality = Cardinality $ defaultCardinality' one (bottom :: a) where
+  defaultCardinality' i = maybe i (defaultCardinality' $ i + one) <<< succ
+
   -- | Runs in `O(n)` where `n` is `fromEnum a`
   -- |
   -- | ```defaultToEnum succ bottom = toEnum```
