@@ -42,7 +42,7 @@ runCardinality (Cardinality a) = a
 -- | - ```pred >=> succ >=> pred = pred```
 -- | - ```succ >=> pred >=> succ = succ```
 
-class Enum a where
+class (Ord a) <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
 
