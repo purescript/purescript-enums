@@ -1,6 +1,6 @@
 module Data.Enum
   ( Enum
-  , Finite
+  , BoundedEnum
   , Cardinality(..)
   , cardinality
   , fromEnum
@@ -115,7 +115,7 @@ intStepFromTo step from to =
 -- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
 -- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
-class (Bounded a, Enum a) <= Finite a where
+class (Bounded a, Enum a) <= BoundedEnum a where
   cardinality :: Cardinality a
 
 -- | ## Instances
@@ -127,7 +127,7 @@ instance enumUnit :: Enum Unit where
   toEnum _ = Nothing
   fromEnum = const 0
 
-instance finiteUnit :: Finite Unit where
+instance boundedEnumUnit :: BoundedEnum Unit where
   cardinality = Cardinality 1
 
 instance enumChar :: Enum Char where
@@ -144,11 +144,11 @@ charToEnum _ = Nothing
 charFromEnum :: Char -> Int
 charFromEnum = toCharCode
 
-instance finiteChar :: Finite Char where
+instance boundedEnumChar :: BoundedEnum Char where
   cardinality = Cardinality 65536
 
--- TODO JB Finite is too restrictive on a, all we need is bottom
-instance enumMaybe :: (Finite a) => Enum (Maybe a) where
+-- TODO JB BoundedEnum is too restrictive on a, all we need is bottom
+instance enumMaybe :: (BoundedEnum a) => Enum (Maybe a) where
   succ Nothing = Just $ Just bottom
   succ (Just a) = Just <$> succ a
   pred Nothing = Nothing
@@ -157,17 +157,17 @@ instance enumMaybe :: (Finite a) => Enum (Maybe a) where
   fromEnum Nothing = zero
   fromEnum (Just e) = fromEnum e + one
 
-instance finiteMaybe :: (Finite a) => Finite (Maybe a) where
+instance boundedEnumMaybe :: (BoundedEnum a) => BoundedEnum (Maybe a) where
   cardinality = maybeCardinality cardinality
 
-maybeToEnum :: forall a. (Finite a) => Cardinality a -> Int -> Maybe (Maybe a)
+maybeToEnum :: forall a. (BoundedEnum a) => Cardinality a -> Int -> Maybe (Maybe a)
 maybeToEnum carda n | n <= runCardinality (maybeCardinality carda) =
   if n == zero
   then Just $ Nothing
   else Just $ toEnum (n - one)
 maybeToEnum _    _ = Nothing
 
-maybeCardinality :: forall a. (Finite a) => Cardinality a -> Cardinality (Maybe a)
+maybeCardinality :: forall a. (BoundedEnum a) => Cardinality a -> Cardinality (Maybe a)
 maybeCardinality c = Cardinality $ one + (runCardinality c)
 
 instance enumBoolean :: Enum Boolean where
@@ -176,7 +176,7 @@ instance enumBoolean :: Enum Boolean where
   toEnum = defaultToEnum booleanSucc bottom
   fromEnum = defaultFromEnum booleanPred
 
-instance finiteBoolean :: Finite Boolean where
+instance boundedEnumBoolean :: BoundedEnum Boolean where
   cardinality = Cardinality 2
 
 booleanSucc :: Boolean -> Maybe Boolean
@@ -187,27 +187,27 @@ booleanPred :: Boolean -> Maybe Boolean
 booleanPred true  = Just false
 booleanPred _     = Nothing
 
-instance enumTuple :: (Finite a, Finite b) => Enum (Tuple a b) where
+instance enumTuple :: (BoundedEnum a, BoundedEnum b) => Enum (Tuple a b) where
   succ (Tuple a b) = maybe (flip Tuple bottom <$> succ a) (Just <<< Tuple a) (succ b)
   pred (Tuple a b) = maybe (flip Tuple bottom <$> pred a) (Just <<< Tuple a) (pred b)
   toEnum = tupleToEnum cardinality
   fromEnum = tupleFromEnum cardinality
 
-instance finiteTuple :: (Finite a, Finite b) => Finite (Tuple a b) where
+instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tuple a b) where
   cardinality = tupleCardinality cardinality cardinality
 
 -- | All of these are as a workaround for `ScopedTypeVariables`. (not yet supported in Purescript)
-tupleToEnum :: forall a b. (Enum a, Finite b) => Cardinality b -> Int -> Maybe (Tuple a b)
+tupleToEnum :: forall a b. (Enum a, BoundedEnum b) => Cardinality b -> Int -> Maybe (Tuple a b)
 tupleToEnum cardb n = Tuple <$> (toEnum (n / (runCardinality cardb))) <*> (toEnum (n `mod` (runCardinality cardb)))
 
-tupleFromEnum :: forall a b. (Enum a, Finite b) => Cardinality b -> Tuple a b -> Int
+tupleFromEnum :: forall a b. (Enum a, BoundedEnum b) => Cardinality b -> Tuple a b -> Int
 tupleFromEnum cardb (Tuple a b) = (fromEnum a) * runCardinality cardb + fromEnum b
 
 tupleCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Tuple a b)
 tupleCardinality l r = Cardinality $ (runCardinality l) * (runCardinality r)
 
--- TODO JB why do both a and b have to be finite?
-instance enumEither :: (Finite a, Finite b) => Enum (Either a b) where
+-- TODO JB why do both a and b have to be BoundedEnum?
+instance enumEither :: (BoundedEnum a, BoundedEnum b) => Enum (Either a b) where
   succ (Left a) = maybe (Just $ Right bottom) (Just <<< Left) (succ a)
   succ (Right b) = maybe (Nothing) (Just <<< Right) (succ b)
   pred (Left a) = maybe (Nothing) (Just <<< Left) (pred a)
@@ -215,10 +215,10 @@ instance enumEither :: (Finite a, Finite b) => Enum (Either a b) where
   toEnum = eitherToEnum cardinality cardinality
   fromEnum = eitherFromEnum cardinality
 
-instance finiteEither :: (Finite a, Finite b) => Finite (Either a b) where
+instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Either a b) where
   cardinality = eitherCardinality cardinality cardinality
 
-eitherToEnum :: forall a b. (Finite a, Finite b) => Cardinality a -> Cardinality b -> Int -> Maybe (Either a b)
+eitherToEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality a -> Cardinality b -> Int -> Maybe (Either a b)
 eitherToEnum carda cardb n =
       if n >= zero && n < runCardinality carda
       then Left <$> toEnum n
@@ -230,5 +230,5 @@ eitherFromEnum :: forall a b. (Enum a, Enum b) => Cardinality a -> (Either a b -
 eitherFromEnum carda (Left a) = fromEnum a
 eitherFromEnum carda (Right b) = fromEnum b + runCardinality carda
 
-eitherCardinality :: forall a b. (Finite a, Finite b) => Cardinality a -> Cardinality b -> Cardinality (Either a b)
+eitherCardinality :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality a -> Cardinality b -> Cardinality (Either a b)
 eitherCardinality l r = Cardinality $ (runCardinality l) + (runCardinality r)
