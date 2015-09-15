@@ -13,8 +13,6 @@ module Data.Enum
   , defaultCardinality
   , defaultToEnum
   , defaultFromEnum
-  , intFromTo
-  , intStepFromTo
   , enumFromTo
   , enumFromThenTo
   , upFrom
@@ -59,11 +57,9 @@ defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - one)
 -- | Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
 -- |
 -- | Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
--- TODO this shouldn't require BoundedEnum, just Enum
-enumFromTo :: forall a. (BoundedEnum a) => a -> a -> Array a
-enumFromTo a b = (toEnum >>> fromJust) <$> intFromTo a' b'
-  where a' = fromEnum a
-        b' = fromEnum b
+-- TODO need to update the doc comment above
+enumFromTo :: forall a u. (Enum a, Unfoldable u) => a -> a -> u a
+enumFromTo from to = unfoldr (\x -> succ x >>= \x' -> if x <= to then pure $ Tuple x x' else Nothing) from
 
 -- | `[a,b..c]`
 -- |
@@ -74,10 +70,6 @@ enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
   where a' = fromEnum a
         b' = fromEnum b
         c' = fromEnum c
-
--- | Property: ```forall e in intFromTo a b: a <= e <= b```
-intFromTo :: Int -> Int -> Array Int
-intFromTo = intStepFromTo one
 
 -- | Property: ```forall e in intStepFromTo step a b: a <= e <= b```
 intStepFromTo :: Int -> Int -> Int -> Array Int
