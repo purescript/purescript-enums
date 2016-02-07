@@ -64,7 +64,6 @@ enumFromTo from to = unfoldr (\x -> succ x >>= \x' -> if x <= to then pure $ Tup
 -- | `[a,b..c]`
 -- |
 -- | Correctness for using `fromJust` is the same as for `enumFromTo`.
--- TODO this shouldn't require BoundedEnum, just Enum
 enumFromThenTo :: forall a. (BoundedEnum a) => a -> a -> a -> Array a
 enumFromThenTo a b c = (toEnum >>> fromJust) <$> intStepFromTo (b' - a') a' c'
   where a' = fromEnum a
