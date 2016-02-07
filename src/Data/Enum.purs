@@ -238,7 +238,6 @@ eitherToEnum carda cardb n =
            then Right <$> toEnum (n - runCardinality carda)
            else Nothing
 
--- TODO this shouldn't require BoundedEnum
 eitherFromEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality a -> (Either a b -> Int)
 eitherFromEnum carda (Left a) = fromEnum a
 eitherFromEnum carda (Right b) = fromEnum b + runCardinality carda
