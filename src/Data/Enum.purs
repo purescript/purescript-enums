@@ -200,7 +200,7 @@ booleanPred :: Boolean -> Maybe Boolean
 booleanPred true  = Just false
 booleanPred _     = Nothing
 
-instance enumTuple :: (BoundedEnum a, BoundedEnum b) => Enum (Tuple a b) where
+instance enumTuple :: (Enum a, BoundedEnum b) => Enum (Tuple a b) where
   succ (Tuple a b) = maybe (flip Tuple bottom <$> succ a) (Just <<< Tuple a) (succ b)
   pred (Tuple a b) = maybe (flip Tuple bottom <$> pred a) (Just <<< Tuple a) (pred b)
 
@@ -210,11 +210,9 @@ instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tupl
   fromEnum = tupleFromEnum cardinality
 
 -- | All of these are as a workaround for `ScopedTypeVariables`. (not yet supported in Purescript)
--- TODO we shouldn't need BoundedEnum on a
 tupleToEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality b -> Int -> Maybe (Tuple a b)
 tupleToEnum cardb n = Tuple <$> (toEnum (n / (runCardinality cardb))) <*> (toEnum (n `mod` (runCardinality cardb)))
 
--- TODO we shouldn't need BoundedEnum on a
 tupleFromEnum :: forall a b. (BoundedEnum a, BoundedEnum b) => Cardinality b -> Tuple a b -> Int
 tupleFromEnum cardb (Tuple a b) = (fromEnum a) * runCardinality cardb + fromEnum b
 
