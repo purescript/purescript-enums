@@ -221,7 +221,6 @@ tupleFromEnum cardb (Tuple a b) = (fromEnum a) * runCardinality cardb + fromEnum
 tupleCardinality :: forall a b. (Enum a, Enum b) => Cardinality a -> Cardinality b -> Cardinality (Tuple a b)
 tupleCardinality l r = Cardinality $ (runCardinality l) * (runCardinality r)
 
--- TODO JB why do both a and b have to be BoundedEnum?
 instance enumEither :: (BoundedEnum a, BoundedEnum b) => Enum (Either a b) where
   succ (Left a) = maybe (Just $ Right bottom) (Just <<< Left) (succ a)
   succ (Right b) = maybe (Nothing) (Just <<< Right) (succ b)
