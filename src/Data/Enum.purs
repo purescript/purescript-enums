@@ -202,7 +202,7 @@ booleanPred _     = Nothing
 
 instance enumTuple :: (Enum a, BoundedEnum b) => Enum (Tuple a b) where
   succ (Tuple a b) = maybe (flip Tuple bottom <$> succ a) (Just <<< Tuple a) (succ b)
-  pred (Tuple a b) = maybe (flip Tuple bottom <$> pred a) (Just <<< Tuple a) (pred b)
+  pred (Tuple a b) = maybe (flip Tuple top <$> pred a) (Just <<< Tuple a) (pred b)
 
 instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tuple a b) where
   cardinality = tupleCardinality cardinality cardinality
