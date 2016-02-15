@@ -1,5 +1,5 @@
 module Data.Enum
-  ( Enum
+  ( class Enum
   , Cardinality(..)
   , cardinality
   , fromEnum
@@ -17,13 +17,13 @@ module Data.Enum
   , enumFromThenTo
   ) where
 
-import Prelude
+import Prelude (class Bounded, (+), ($), (-), (<$>), (<), (&&), (>=), zero, (<<<), top, bottom, (*), mod, (/), (<*>), flip, one, (==), (<=), (>>>), (>>=), otherwise)
 import Data.Char (fromCharCode, toCharCode)
-import Data.Either
-import Data.Maybe
-import Data.Maybe.Unsafe
-import Data.Tuple
-import Data.Unfoldable
+import Data.Either (Either(Right, Left))
+import Data.Maybe (Maybe(Nothing, Just), maybe)
+import Data.Maybe.Unsafe (fromJust)
+import Data.Tuple (Tuple(Tuple))
+import Data.Unfoldable (unfoldr)
 
 newtype Cardinality a = Cardinality Int
 
