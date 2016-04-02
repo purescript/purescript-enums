@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/purescript/purescript-enums.svg?branch=master)](https://travis-ci.org/purescript/purescript-enums)
 [![Dependency Status](https://www.versioneye.com/user/projects/55848c63363861001d000330/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55848c63363861001d000330)
 
-Operations for small ordered sum types.
+Operations for sequentially ordered types.
 
 ## Installation
 
@@ -12,6 +12,6 @@ Operations for small ordered sum types.
 bower install purescript-enums
 ```
 
-## Module documentation
+## Documentation
 
-- [Data.Enum](docs/Data/Enum.md)
+Module documentation is [published on Pursuit](http://pursuit.purescript.org/packages/purescript-enums).
