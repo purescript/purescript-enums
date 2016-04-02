@@ -16,8 +16,7 @@ runCardinality :: forall a. Cardinality a -> Int
 #### `Enum`
 
 ``` purescript
-class (Bounded a) <= Enum a where
-  cardinality :: Cardinality a
+class Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
   toEnum :: Int -> Maybe a
@@ -26,29 +25,24 @@ class (Bounded a) <= Enum a where
 
 Type class for enumerations. This should not be considered a part of a
 numeric hierarchy, ala Haskell. Rather, this is a type class for small,
-ordered sum types with statically-determined cardinality and the ability
-to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
+ordered sum types with the ability to easily compute successor and
+predecessor elements. e.g. `DayOfWeek`, etc.
 
 Laws:
 
-- ```succ bottom >>= succ >>= succ ... succ [cardinality - 1 times] == top```
-- ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
 - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
-- ```forall a > bottom: pred a >>= succ == Just a```
-- ```forall a < top:  succ a >>= pred == Just a```
 - ```pred >=> succ >=> pred = pred```
 - ```succ >=> pred >=> succ = succ```
 - ```toEnum (fromEnum a) = Just a```
-- ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
-- ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
 
 ##### Instances
 ``` purescript
+instance enumUnit :: Enum Unit
 instance enumChar :: Enum Char
-instance enumMaybe :: (Enum a) => Enum (Maybe a)
+instance enumMaybe :: (Finite a) => Enum (Maybe a)
 instance enumBoolean :: Enum Boolean
-instance enumTuple :: (Enum a, Enum b) => Enum (Tuple a b)
-instance enumEither :: (Enum a, Enum b) => Enum (Either a b)
+instance enumTuple :: (Finite a, Finite b) => Enum (Tuple a b)
+instance enumEither :: (Finite a, Finite b) => Enum (Either a b)
 ```
 
 #### `defaultSucc`
@@ -122,5 +116,36 @@ intStepFromTo :: Int -> Int -> Int -> Array Int
 ```
 
 Property: ```forall e in intStepFromTo step a b: a <= e <= b```
+
+#### `Finite`
+
+``` purescript
+class (Bounded a, Enum a) <= Finite a where
+  cardinality :: Cardinality a
+```
+
+Type class for finite enumerations. This should not be considered a part of
+a numeric hierarchy, ala Haskell. Rather, this is a type class for small,
+ordered sum types with statically-determined cardinality and the ability
+to easily compute successor and predecessor elements. e.g. `DayOfWeek`, etc.
+
+Laws:
+
+- ```succ bottom >>= succ >>= succ ... succ [cardinality - 1 times] == top```
+- ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
+- ```forall a > bottom: pred a >>= succ == Just a```
+- ```forall a < top:  succ a >>= pred == Just a```
+- ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
+- ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+
+##### Instances
+``` purescript
+instance finiteUnit :: Finite Unit
+instance finiteChar :: Finite Char
+instance finiteMaybe :: (Finite a) => Finite (Maybe a)
+instance finiteBoolean :: Finite Boolean
+instance finiteTuple :: (Finite a, Finite b) => Finite (Tuple a b)
+instance finiteEither :: (Finite a, Finite b) => Finite (Either a b)
+```
 
 
