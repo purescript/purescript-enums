@@ -21,5 +21,9 @@
     "purescript-either": "^1.0.0-rc.1",
     "purescript-strings": "^1.0.0-rc.1",
     "purescript-unfoldable": "^1.0.0-rc.1"
+  },
+  "devDependencies": {
+    "purescript-assert": "^1.0.0-rc.1",
+    "purescript-console": "^1.0.0-rc.1"
   }
 }
