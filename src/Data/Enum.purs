@@ -15,6 +15,8 @@ module Data.Enum
 
 import Prelude
 
+import Control.MonadPlus (guard)
+
 import Data.Char (fromCharCode, toCharCode)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
@@ -93,12 +95,15 @@ defaultSucc toEnum' fromEnum' a = toEnum' (fromEnum' a + 1)
 defaultPred :: forall a. (Int -> Maybe a) -> (a -> Int) -> a -> Maybe a
 defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - 1)
 
--- | Property: ```fromEnum a = a', fromEnum b = b' => forall e', a' <= e' <= b': Exists e: toEnum e' = Just e```
--- |
--- | Following from the propery of `intFromTo`, we are sure all elements in `intFromTo (fromEnum a) (fromEnum b)` are `Just`s.
--- TODO need to update the doc comment above
+-- | Returns a successive sequence of elements from the lower bound to
+-- | the upper bound (inclusive).
 enumFromTo :: forall a u. (Enum a, Unfoldable u) => a -> a -> u a
-enumFromTo from to = unfoldr (\x -> succ x >>= \x' -> if x <= to then pure $ Tuple x x' else Nothing) from
+enumFromTo from to = unfoldr go (Just from)
+  where
+    go mx = do
+      x <- mx
+      guard (x <= to)
+      pure $ Tuple x (succ x)
 
 -- | `[a,b..c]`
 enumFromThenTo :: forall a. BoundedEnum a => a -> a -> a -> Array a
