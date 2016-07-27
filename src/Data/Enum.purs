@@ -7,7 +7,7 @@ module Data.Enum
   , upFrom
   , downFrom
   , Cardinality(..), runCardinality
-  , class BoundedEnum, cardinality, toEnum, fromEnum
+  , class BoundedEnum, cardinality, toEnum, fromEnum, toEnumWithDefaults
   , defaultCardinality
   , defaultToEnum
   , defaultFromEnum
@@ -242,3 +242,18 @@ defaultToEnum n
   -- | Runs in `O(n)` where `n` is `fromEnum a`
 defaultFromEnum :: forall a. Enum a => a -> Int
 defaultFromEnum = maybe 0 (\prd -> defaultFromEnum prd + 1) <<< pred
+
+-- | Like `toEnum` but returns the first argument if `x` is less than
+-- | `fromEnum bottom` and the second argument if `x` is greater than
+-- | `fromEnum top`.
+-- |
+-- | ``` purescript
+-- | toEnumWithDefaults False True (-1) -- False
+-- | toEnumWithDefaults False True 0    -- False
+-- | toEnumWithDefaults False True 1    -- True
+-- | toEnumWithDefaults False True 2    -- True
+-- | ```
+toEnumWithDefaults :: forall a. BoundedEnum a => a -> a -> Int -> a
+toEnumWithDefaults b t x = case toEnum x of
+  Just enum -> enum
+  Nothing -> if x < fromEnum (bottom :: a) then b else t
