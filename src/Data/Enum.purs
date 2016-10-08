@@ -6,7 +6,7 @@ module Data.Enum
   , enumFromThenTo
   , upFrom
   , downFrom
-  , Cardinality(..), runCardinality
+  , Cardinality(..)
   , class BoundedEnum, cardinality, toEnum, fromEnum, toEnumWithDefaults
   , defaultCardinality
   , defaultToEnum
@@ -20,6 +20,7 @@ import Control.MonadPlus (guard)
 import Data.Char (fromCharCode, toCharCode)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (class Unfoldable, unfoldr)
 
@@ -27,8 +28,11 @@ import Partial.Unsafe (unsafePartial)
 
 newtype Cardinality a = Cardinality Int
 
-runCardinality :: forall a. Cardinality a -> Int
-runCardinality (Cardinality a) = a
+derive instance newtypeCardinality :: Newtype (Cardinality a) _
+
+derive newtype instance eqCardinality :: Eq (Cardinality a)
+
+derive newtype instance ordCardinality :: Ord (Cardinality a)
 
 -- | Type class for enumerations.
 -- |
@@ -188,7 +192,7 @@ instance boundedEnumOrdering :: BoundedEnum Ordering where
   fromEnum GT = 2
 
 instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
-  cardinality = Cardinality $ runCardinality (cardinality :: Cardinality a) + 1
+  cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
   toEnum = to cardinality
     where
     to :: Cardinality a -> Int -> Maybe (Maybe a)
@@ -201,8 +205,8 @@ instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
 instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Either a b) where
   cardinality =
     Cardinality
-      $ runCardinality (cardinality :: Cardinality a)
-      + runCardinality (cardinality :: Cardinality b)
+      $ unwrap (cardinality :: Cardinality a)
+      + unwrap (cardinality :: Cardinality b)
   toEnum = to cardinality cardinality
     where
     to :: Cardinality a -> Cardinality (Either a b) -> Int -> Maybe (Either a b)
@@ -211,13 +215,13 @@ instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Eit
       | n >= ca && n < cab = Right <$> toEnum (n - ca)
       | otherwise = Nothing
   fromEnum (Left a) = fromEnum a
-  fromEnum (Right b) = fromEnum b + runCardinality (cardinality :: Cardinality a)
+  fromEnum (Right b) = fromEnum b + unwrap (cardinality :: Cardinality a)
 
 instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tuple a b) where
   cardinality =
     Cardinality
-      $ runCardinality (cardinality :: Cardinality a)
-      * runCardinality (cardinality :: Cardinality b)
+      $ unwrap (cardinality :: Cardinality a)
+      * unwrap (cardinality :: Cardinality b)
   toEnum = to cardinality
     where
     to :: Cardinality b -> Int -> Maybe (Tuple a b)
