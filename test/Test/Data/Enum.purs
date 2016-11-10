@@ -5,10 +5,12 @@ import Prelude
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
 
+import Data.Newtype (unwrap)
 import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
                   defaultCardinality, enumFromTo, enumFromThenTo, upFrom,
-                  downFrom, toEnum)
+                  downFrom, toEnum, fromEnum, Cardinality, cardinality)
 import Data.Maybe (Maybe(..))
+import Data.Either (Either(..))
 
 import Test.Assert (ASSERT, assert)
 
@@ -70,3 +72,13 @@ testEnum = do
   assert $ toEnum 1 == Just (Just false) :: Maybe (Maybe Boolean)
   assert $ toEnum 2 == Just (Just true) :: Maybe (Maybe Boolean)
   assert $ toEnum 3 == Nothing :: Maybe (Maybe Boolean)
+
+  log "BoundedEnum (Either _ _)"
+  assert $ unwrap (cardinality :: Cardinality (Either Boolean Boolean)) == 4
+  assert $ toEnum 0 == Just (Left false :: Either Boolean T)
+  assert $ toEnum 1 == Just (Left true :: Either Boolean T)
+  assert $ toEnum 3 == Just (Right B :: Either Boolean T)
+  assert $ fromEnum (Left false :: Either Boolean T) == 0
+  assert $ fromEnum (Left true :: Either Boolean T) == 1
+  assert $ fromEnum (Right B :: Either Boolean T) == 3
+
