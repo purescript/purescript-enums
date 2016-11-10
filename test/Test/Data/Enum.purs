@@ -7,7 +7,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 
 import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
                   defaultCardinality, enumFromTo, enumFromThenTo, upFrom,
-                  downFrom)
+                  downFrom, toEnum)
 import Data.Maybe (Maybe(..))
 
 import Test.Assert (ASSERT, assert)
@@ -63,3 +63,10 @@ testEnum = do
   assert $ downFrom D == [C, B, A]
   assert $ downFrom B == [      A]
   assert $ downFrom A == [       ]
+
+  log "BoundedEnum (Maybe Boolean)"
+  assert $ toEnum (-1) == Nothing :: Maybe (Maybe Boolean)
+  assert $ toEnum 0 == Just Nothing :: Maybe (Maybe Boolean)
+  assert $ toEnum 1 == Just (Just false) :: Maybe (Maybe Boolean)
+  assert $ toEnum 2 == Just (Just true) :: Maybe (Maybe Boolean)
+  assert $ toEnum 3 == Nothing :: Maybe (Maybe Boolean)
