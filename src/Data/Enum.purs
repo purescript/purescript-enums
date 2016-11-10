@@ -196,8 +196,8 @@ instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
   toEnum = to cardinality
     where
     to :: Cardinality a -> Int -> Maybe (Maybe a)
-    to _ 0 = Nothing
-    to (Cardinality ca) n | n <= ca = Just $ toEnum (n - 1)
+    to _ 0 = Just Nothing
+    to (Cardinality ca) n | n > 0 && n <= ca = Just $ toEnum (n - 1)
     to _ _ = Nothing
   fromEnum Nothing = 0
   fromEnum (Just e) = fromEnum e + 1
