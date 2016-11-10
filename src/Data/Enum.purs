@@ -203,13 +203,12 @@ instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Eit
     Cardinality
       $ unwrap (cardinality :: Cardinality a)
       + unwrap (cardinality :: Cardinality b)
-  toEnum n = to cardinality cardinality
+  toEnum n = to cardinality
     where
-    to :: Cardinality a -> Cardinality (Either a b) -> Maybe (Either a b)
-    to (Cardinality ca) (Cardinality cab)
+    to :: Cardinality a -> Maybe (Either a b)
+    to (Cardinality ca)
       | n >= 0 && n < ca = Left <$> toEnum n
-      | n >= ca && n < cab = Right <$> toEnum (n - ca)
-      | otherwise = Nothing
+      | otherwise = Right <$> toEnum (n - ca)
   fromEnum (Left a) = fromEnum a
   fromEnum (Right b) = fromEnum b + unwrap (cardinality :: Cardinality a)
 
