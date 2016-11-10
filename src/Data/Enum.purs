@@ -193,12 +193,8 @@ instance boundedEnumOrdering :: BoundedEnum Ordering where
 
 instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
   cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
-  toEnum = to cardinality
-    where
-    to :: Cardinality a -> Int -> Maybe (Maybe a)
-    to _ 0 = Just Nothing
-    to (Cardinality ca) n | n > 0 && n <= ca = Just $ toEnum (n - 1)
-    to _ _ = Nothing
+  toEnum 0 = pure Nothing
+  toEnum n = Just <$> toEnum (n - 1)
   fromEnum Nothing = 0
   fromEnum (Just e) = fromEnum e + 1
 
