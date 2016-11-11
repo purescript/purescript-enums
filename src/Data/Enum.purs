@@ -37,10 +37,12 @@ derive newtype instance ordCardinality :: Ord (Cardinality a)
 -- | Type class for enumerations.
 -- |
 -- | Laws:
--- | - `succ a > pred a where succ a /= Nothing`
--- | - `pred a < succ a where succ a /= Nothing`
--- | - `pred >=> succ >=> pred = pred where succ a /= Nothing`
--- | - `succ >=> pred >=> succ = succ where succ a /= Nothing`
+-- | - Successor: `maybe true (a < _) (succ a)`
+-- | - Predecessor: `maybe true (_ < a) (pred a)`
+-- | - Succ retracts pred: `pred a >>= succ >>= pred = pred a`
+-- | - Pred retracts succ: `succ a >>= pred >>= succ = succ a`
+-- | - Non-skipping succ: `y <= x || maybe false (_ <= y) (succ x)`
+-- | - Non-skipping pred: `x <= y || maybe false (y <= _) (pred x)`
 class Ord a <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
