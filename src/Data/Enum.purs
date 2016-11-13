@@ -41,8 +41,8 @@ derive newtype instance ordCardinality :: Ord (Cardinality a)
 -- | - Predecessor: `maybe true (_ < a) (pred a)`
 -- | - Succ retracts pred: `pred a >>= succ >>= pred = pred a`
 -- | - Pred retracts succ: `succ a >>= pred >>= succ = succ a`
--- | - Non-skipping succ: `y <= x || maybe false (_ <= y) (succ x)`
--- | - Non-skipping pred: `x <= y || maybe false (y <= _) (pred x)`
+-- | - Non-skipping succ: `b <= a || maybe false (_ <= b) (succ a)`
+-- | - Non-skipping pred: `a <= b || maybe false (b <= _) (pred a)`
 class Ord a <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
