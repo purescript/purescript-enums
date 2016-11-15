@@ -159,8 +159,8 @@ downFrom = unfoldr (map diag <<< pred)
 -- | - ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
 -- | - ```forall a > bottom: pred a >>= succ == Just a```
 -- | - ```forall a < top:  succ a >>= pred == Just a```
--- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
--- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+-- | - ```forall a > bottom: fromEnum <$> pred a = pred (fromEnum a)```
+-- | - ```forall a < top:  fromEnum <$> succ a = succ (fromEnum a)```
 -- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
 -- | - ```toEnum (fromEnum a) = Just a```
 class (Bounded a, Enum a) <= BoundedEnum a where
