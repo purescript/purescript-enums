@@ -1,8 +1,7 @@
 # purescript-enums
 
-[![Latest release](http://img.shields.io/bower/v/purescript-enums.svg)](https://github.com/purescript/purescript-enums/releases)
-[![Build Status](https://travis-ci.org/purescript/purescript-enums.svg?branch=master)](https://travis-ci.org/purescript/purescript-enums)
-[![Dependency Status](https://www.versioneye.com/user/projects/55848c63363861001d000330/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55848c63363861001d000330)
+[![Latest release](http://img.shields.io/github/release/purescript/purescript-enums.svg)](https://github.com/purescript/purescript-enums/releases)
+[![Build status](https://travis-ci.org/purescript/purescript-enums.svg?branch=master)](https://travis-ci.org/purescript/purescript-enums)
 
 Operations for sequentially ordered types.
 
