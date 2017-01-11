@@ -20,7 +20,8 @@
   "dependencies": {
     "purescript-either": "^2.0.0",
     "purescript-strings": "^2.0.0",
-    "purescript-unfoldable": "^2.0.0"
+    "purescript-unfoldable": "^2.0.0",
+    "purescript-generics-rep": "^4.0.0"
   },
   "devDependencies": {
     "purescript-assert": "^2.0.0",
