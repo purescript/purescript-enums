@@ -2,6 +2,7 @@ module Data.Generic.Rep.Enum
   ( genericSucc
   , class GenericSucc
   , succ'
+  , construct
 
   , genericPred
   , class GenericPred
@@ -28,54 +29,40 @@ import Prelude ((<$>), (+), (-))
 
 class GenericSucc a where
   succ' :: a -> Maybe a
+  construct :: a
 
-instance genericSuccSumConstructor ::
-  GenericSucc (
-    Sum
-      (Constructor n1 NoArguments)
-      (Constructor n2 NoArguments)
-  ) where
-  succ' (Inl _) = Just (Inr (Constructor NoArguments))
-  succ' (Inr _) = Nothing
+instance genericSuccConstructor :: GenericSucc (Constructor n NoArguments) where
+succ' _ = Nothing
+construct = Constructor NoArguments
 
-instance genericSuccSumSum ::
-  GenericSucc (Sum (Constructor n2 NoArguments) a)
-    => GenericSucc (
+instance genericSuccSum ::
+  GenericSucc a =>
+    GenericSucc (
       Sum
-        (Constructor n1 NoArguments)
-        (Sum
-          (Constructor n2 NoArguments)
-          a
-        )
+        (Constructor n NoArguments)
+        a
     ) where
-  succ' (Inl _) = Just (Inr (Inl (Constructor NoArguments)))
-  succ' (Inr x) = Inr <$> succ' x
+succ' (Inl _) = Just (Inr construct)
+succ' (Inr x) = Inr <$> succ' x
+construct = Inl (Constructor NoArguments)
 
 class GenericPred a where
   pred' :: a -> Maybe a
 
-instance genericPredSumConstructor ::
-  GenericPred (
-    Sum
-      (Constructor n1 NoArguments)
-      (Constructor n2 NoArguments)
-  ) where
-  pred' (Inl _) = Nothing
-  pred' (Inr x) = Just (Inl (Constructor NoArguments))
+instance genericPredConstructor :: GenericPred (Constructor n NoArguments) where
+pred' _ = Nothing
 
-instance genericPredSumSum ::
-  GenericPred (Sum (Constructor n2 NoArguments) a)
-    => GenericPred (
+instance genericPredSum ::
+  GenericPred a =>
+    GenericPred (
       Sum
-        (Constructor n1 NoArguments)
-        (Sum
-          (Constructor n2 NoArguments)
-          a
-        )
+        (Constructor n NoArguments)
+        a
     ) where
-  pred' (Inl _) = Nothing
-  pred' (Inr (Inl _)) = Just (Inl (Constructor NoArguments))
-  pred' (Inr x) = Inr <$> (pred' x)
+pred' (Inl _) = Nothing
+pred' (Inr x) = case pred' x of
+    Nothing   -> Just (Inl (Constructor NoArguments))
+    Just pred -> Just (Inr pred)
 
 class GenericFromEnum a where
   fromEnum' :: a -> Int
