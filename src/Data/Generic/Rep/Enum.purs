@@ -1,23 +1,15 @@
 module Data.Generic.Rep.Enum
-  ( genericSucc
-  , class GenericSucc
-  , succ'
-  , construct
-
+  ( class GenericEnum
+  , genericSucc
   , genericPred
-  , class GenericPred
-  , pred'
-
   , genericFromEnum
-  , class GenericFromEnum
-  , fromEnum'
-
   , genericToEnum
-  , class GenericToEnum
-  , toEnum'
-
   , genericCardinality
-  , class GenericCardinality
+  , succ'
+  , pred'
+  , construct
+  , fromEnum'
+  , toEnum'
   , cardinality'
   ) where
 
@@ -27,106 +19,54 @@ import Data.Enum (Cardinality(Cardinality))
 import Data.Newtype (unwrap)
 import Prelude ((<$>), (+), (-))
 
-class GenericSucc a where
+class GenericEnum a where
   succ' :: a -> Maybe a
+  pred' :: a -> Maybe a
+  fromEnum' :: a -> Int
+  toEnum' :: Int -> Maybe a
+  cardinality' :: Cardinality a
   construct :: a
 
-instance genericSuccConstructor :: GenericSucc (Constructor n NoArguments) where
-succ' _ = Nothing
-construct = Constructor NoArguments
-
-instance genericSuccSum ::
-  GenericSucc a =>
-    GenericSucc (
-      Sum
-        (Constructor n NoArguments)
-        a
-    ) where
-succ' (Inl _) = Just (Inr construct)
-succ' (Inr x) = Inr <$> succ' x
-construct = Inl (Constructor NoArguments)
-
-class GenericPred a where
-  pred' :: a -> Maybe a
-
-instance genericPredConstructor :: GenericPred (Constructor n NoArguments) where
-pred' _ = Nothing
-
-instance genericPredSum ::
-  GenericPred a =>
-    GenericPred (
-      Sum
-        (Constructor n NoArguments)
-        a
-    ) where
-pred' (Inl _) = Nothing
-pred' (Inr x) = case pred' x of
-    Nothing   -> Just (Inl (Constructor NoArguments))
-    Just pred -> Just (Inr pred)
-
-class GenericFromEnum a where
-  fromEnum' :: a -> Int
-
-instance genericFromEnumConstructor ::
-  GenericFromEnum (Constructor n NoArguments) where
+instance genericEnumConstructor :: GenericEnum (Constructor n NoArguments) where
+  succ' _ = Nothing
+  pred' _ = Nothing
   fromEnum' _ = 0
-
-instance genericFromEnumSum ::
-  GenericFromEnum a
-    => GenericFromEnum (
-      Sum
-        (Constructor n1 NoArguments)
-        a
-    ) where
-  fromEnum' (Inl _) = 0
-  fromEnum' (Inr x) = 1 + (fromEnum' x)
-
-class GenericToEnum a where
-  toEnum' :: Int -> Maybe a
-
-instance genericToEnumConstructor ::
-  GenericToEnum (Constructor n NoArguments) where
   toEnum' 0 = Just (Constructor NoArguments)
   toEnum' _ = Nothing
-
-instance genericToEnumSum ::
-  GenericToEnum a
-    => GenericToEnum (
-      Sum
-        (Constructor n1 NoArguments)
-        a
-    ) where
-  toEnum' 0 = Just (Inl (Constructor NoArguments))
-  toEnum' x = Inr <$> toEnum' (x - 1)
-
-class GenericCardinality a where
-  cardinality' :: Cardinality a
-
-instance genericCardinalityConstructor ::
-  GenericCardinality (Constructor name NoArguments) where
   cardinality' = Cardinality 1
+  construct = Constructor NoArguments
 
-instance genericCardinalitySum ::
-  GenericCardinality a =>
-    GenericCardinality (Sum (Constructor name NoArguments) a) where
-  cardinality' = Cardinality (1 + (unwrap (cardinality' :: Cardinality a)))
+instance genericEnumSum ::
+  (GenericEnum a, GenericEnum b) => GenericEnum (Sum a b) where
+  succ' (Inl _) = Just (Inr construct)
+  succ' (Inr x) = Inr <$> succ' x
+  pred' (Inl _) = Nothing
+  pred' (Inr x) = case pred' x of
+      Nothing   -> Just (Inl construct)
+      Just pred -> Just (Inr pred)
+  construct = Inl construct
+  fromEnum' (Inl _) = 0
+  fromEnum' (Inr x) = 1 + (fromEnum' x)
+  toEnum' 0 = Just construct
+  toEnum' x = Inr <$> toEnum' (x - 1)
+  cardinality' = Cardinality (1 + (unwrap (cardinality' :: Cardinality b)))
 
-genericSucc :: forall a rep. (Generic a rep, GenericSucc rep)
+genericSucc :: forall a rep. (Generic a rep, GenericEnum rep)
   => a -> Maybe a
 genericSucc x = to <$> succ' (from x)
 
-genericPred :: forall a rep. (Generic a rep, GenericPred rep)
+genericPred :: forall a rep. (Generic a rep, GenericEnum rep)
   => a -> Maybe a
 genericPred x = to <$> pred' (from x)
 
-genericFromEnum :: forall a rep. (Generic a rep, GenericFromEnum rep)
+genericFromEnum :: forall a rep. (Generic a rep, GenericEnum rep)
   => a -> Int
 genericFromEnum x = fromEnum' (from x)
 
-genericToEnum :: forall a rep. (Generic a rep, GenericToEnum rep)
+genericToEnum :: forall a rep. (Generic a rep, GenericEnum rep)
   => Int -> Maybe a
 genericToEnum x = to <$> toEnum' x
 
-genericCardinality :: forall a rep. (Generic a rep, GenericCardinality rep)
+genericCardinality :: forall a rep. (Generic a rep, GenericEnum rep)
   => Cardinality a
 genericCardinality = Cardinality (unwrap (cardinality' :: Cardinality rep))
