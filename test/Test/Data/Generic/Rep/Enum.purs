@@ -3,11 +3,10 @@ module Test.Data.Generic.Rep.Enum(testGeneric) where
 import Prelude
 
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Enum (genericSucc, genericPred,
-                              genericFromEnum, genericToEnum,
-			      genericCardinality)
+import Data.Generic.Rep.Enum (genericSucc, genericPred)
 import Data.Enum (class Enum, class BoundedEnum, succ, pred,
-                  Cardinality(..), cardinality, fromEnum, toEnum)
+                  Cardinality(..), cardinality, fromEnum, toEnum,
+                  defaultCardinality, defaultFromEnum, defaultToEnum)
 import Data.Maybe (Maybe(..))
 
 import Control.Monad.Eff (Eff)
@@ -26,9 +25,9 @@ instance enumSmall :: Enum Small where
   succ = genericSucc
   pred = genericPred
 instance boundedEnumSmall :: BoundedEnum Small where
-  fromEnum = genericFromEnum
-  toEnum = genericToEnum
-  cardinality = genericCardinality
+  fromEnum = defaultFromEnum
+  toEnum = defaultToEnum
+  cardinality = defaultCardinality
 
 data Big = C | D | E | F | G
 derive instance eqBig  :: Eq  Big
@@ -41,9 +40,9 @@ instance enumBig :: Enum Big where
   succ = genericSucc
   pred = genericPred
 instance boundedEnumBig :: BoundedEnum Big where
-  fromEnum = genericFromEnum
-  toEnum = genericToEnum
-  cardinality = genericCardinality
+  fromEnum = defaultFromEnum
+  toEnum = defaultToEnum
+  cardinality = defaultCardinality
 
 testGeneric :: Eff (console :: CONSOLE, assert :: ASSERT) Unit
 testGeneric = do
