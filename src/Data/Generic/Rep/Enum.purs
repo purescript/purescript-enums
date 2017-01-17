@@ -13,16 +13,22 @@ import Data.Generic.Rep.Bounded (class GenericBottom, genericBottom',
                                  class GenericTop, genericTop')
 import Prelude ((<$>))
 
-class (GenericEq a, GenericBottom a, GenericTop a) <= GenericEnum a where
+class GenericEnum a where
   succ' :: a -> Maybe a
   pred' :: a -> Maybe a
+
+instance genericEnumNoConstructors :: GenericEnum NoConstructors where
+  succ' _ = Nothing
+  pred' _ = Nothing
 
 instance genericEnumConstructor :: GenericEnum (Constructor n NoArguments) where
   succ' _ = Nothing
   pred' _ = Nothing
 
-instance genericEnumSum :: (GenericEnum a, GenericEnum b)
-  => GenericEnum (Sum a b) where
+instance genericEnumSum :: (
+  GenericEnum a, GenericEq a, GenericTop a,
+  GenericEnum b, GenericEq b, GenericBottom b
+) => GenericEnum (Sum a b) where
   succ' (Inl x) = if genericEq' x genericTop'
                     then Just (Inr genericBottom')
                     else Inl <$> succ' x
@@ -32,6 +38,7 @@ instance genericEnumSum :: (GenericEnum a, GenericEnum b)
   pred' (Inr x) = if genericEq' x genericBottom'
                    then Just (Inl genericTop')
                    else Inr <$> pred' x
+
 genericSucc :: forall a rep. (Generic a rep, GenericEnum rep)
   => a -> Maybe a
 genericSucc x = to <$> succ' (from x)
