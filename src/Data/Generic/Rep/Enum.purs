@@ -7,8 +7,7 @@ module Data.Generic.Rep.Enum
   ) where
 
 import Data.Generic.Rep
-import Data.Maybe (Maybe(..))
-import Data.Generic.Rep.Eq (class GenericEq, genericEq')
+import Data.Maybe (Maybe(..), maybe)
 import Data.Generic.Rep.Bounded (class GenericBottom, genericBottom',
                                  class GenericTop, genericTop')
 import Prelude ((<$>))
@@ -25,19 +24,14 @@ instance genericEnumConstructor :: GenericEnum (Constructor n NoArguments) where
   succ' _ = Nothing
   pred' _ = Nothing
 
-instance genericEnumSum :: (
-  GenericEnum a, GenericEq a, GenericTop a,
-  GenericEnum b, GenericEq b, GenericBottom b
-) => GenericEnum (Sum a b) where
-  succ' (Inl x) = if genericEq' x genericTop'
-                    then Just (Inr genericBottom')
-                    else Inl <$> succ' x
+instance genericEnumSum ::
+  (GenericEnum a, GenericTop a, GenericEnum b, GenericBottom b)
+  => GenericEnum (Sum a b) where
+  succ' (Inl x) = Just (maybe (Inr genericBottom') Inl (succ' x))
   succ' (Inr x) = Inr <$> succ' x
 
   pred' (Inl x) = Inl <$> pred' x
-  pred' (Inr x) = if genericEq' x genericBottom'
-                   then Just (Inl genericTop')
-                   else Inr <$> pred' x
+  pred' (Inr x) = Just (maybe (Inl genericTop') Inr (pred' x))
 
 genericSucc :: forall a rep. (Generic a rep, GenericEnum rep)
   => a -> Maybe a
