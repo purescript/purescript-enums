@@ -165,11 +165,6 @@ instance boundedEnumBoolean :: BoundedEnum Boolean where
   fromEnum false = 0
   fromEnum true = 1
 
-instance boundedEnumInt :: BoundedEnum Int where
-  cardinality = Cardinality (top - bottom)
-  toEnum = Just
-  fromEnum = id
-
 instance boundedEnumChar :: BoundedEnum Char where
   cardinality = Cardinality (toCharCode top - toCharCode bottom)
   toEnum = charToEnum
