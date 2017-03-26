@@ -101,7 +101,7 @@ defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - 1)
 
 -- | Returns a successive sequence of elements from the lower bound to
 -- | the upper bound (inclusive).
-enumFromTo :: forall a u. (Enum a, Unfoldable u) => a -> a -> u a
+enumFromTo :: forall a u. Enum a => Unfoldable u => a -> a -> u a
 enumFromTo from to = unfoldr go (Just from)
   where
     go mx = do
@@ -129,10 +129,10 @@ intStepFromTo step from to =
 diag :: forall a. a -> Tuple a a
 diag a = Tuple a a
 
-upFrom :: forall a u. (Enum a, Unfoldable u) => a -> u a
+upFrom :: forall a u. Enum a => Unfoldable u => a -> u a
 upFrom = unfoldr (map diag <<< succ)
 
-downFrom :: forall a u. (Enum a, Unfoldable u) => a -> u a
+downFrom :: forall a u. Enum a => Unfoldable u => a -> u a
 downFrom = unfoldr (map diag <<< pred)
 
 -- | Type class for finite enumerations.
@@ -164,11 +164,6 @@ instance boundedEnumBoolean :: BoundedEnum Boolean where
   toEnum _ = Nothing
   fromEnum false = 0
   fromEnum true = 1
-
-instance boundedEnumInt :: BoundedEnum Int where
-  cardinality = Cardinality (top - bottom)
-  toEnum = Just
-  fromEnum = id
 
 instance boundedEnumChar :: BoundedEnum Char where
   cardinality = Cardinality (toCharCode top - toCharCode bottom)
@@ -227,12 +222,12 @@ instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tupl
     from (Cardinality cb) (Tuple a b) = fromEnum a * cb + fromEnum b
 
 -- | Runs in `O(n)` where `n` is `fromEnum top`
-defaultCardinality :: forall a. (Bounded a, Enum a) => Cardinality a
+defaultCardinality :: forall a. Bounded a => Enum a => Cardinality a
 defaultCardinality = Cardinality $ defaultCardinality' 1 (bottom :: a) where
   defaultCardinality' i = maybe i (defaultCardinality' $ i + 1) <<< succ
 
   -- | Runs in `O(n)` where `n` is `fromEnum a`
-defaultToEnum :: forall a. (Bounded a, Enum a) => Int -> Maybe a
+defaultToEnum :: forall a. Bounded a => Enum a => Int -> Maybe a
 defaultToEnum n
   | n < 0 = Nothing
   | n == 0 = Just bottom
