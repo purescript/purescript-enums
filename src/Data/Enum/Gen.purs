@@ -2,15 +2,12 @@ module Data.Enum.Gen where
 
 import Prelude
 
-import Control.Monad.Gen (class MonadGen, chooseInt)
-import Data.Enum (class BoundedEnum, fromEnum, toEnum)
-import Partial.Unsafe (unsafePartial)
-import Data.Maybe (fromJust)
+import Control.Monad.Gen (class MonadGen, elements)
+import Data.Enum (class BoundedEnum, enumFromTo)
+import Data.NonEmpty ((:|))
 
--- | Create a random generator for a finite enumeration. `toEnum i` must be
--- | well-behaved: it must return a `Just` value for all `Int`s between
--- | `fromEnum bottom` and `fromEnum top`.
+-- | Create a random generator for a finite enumeration.
 genBoundedEnum :: forall m a. MonadGen m => BoundedEnum a => m a
 genBoundedEnum =
-  unsafePartial fromJust <<< toEnum
-    <$> chooseInt (fromEnum (bottom :: a)) (fromEnum (top :: a))
+  let possibilities = enumFromTo (bottom :: a) (top :: a) :: Array a
+  in elements (bottom :| possibilities)
