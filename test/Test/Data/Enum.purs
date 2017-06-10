@@ -7,9 +7,10 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 
 import Data.Newtype (unwrap)
 import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
-                  defaultCardinality, enumFromTo, enumFromThenTo, upFrom,
+                  defaultCardinality, enumFromTo, enumFromThenTo, upFrom, upFromIncluding,
                   downFrom, toEnum, fromEnum, Cardinality, cardinality)
 import Data.Maybe (Maybe(..))
+import Data.NonEmpty ((:|))
 import Data.Either (Either(..))
 
 import Test.Assert (ASSERT, assert)
@@ -61,6 +62,11 @@ testEnum = do
   assert $ upFrom D == [      E]
   assert $ upFrom E == [       ]
 
+  log "upFromIncluding"
+  assert $ upFromIncluding B == B :| [C, D, E]
+  assert $ upFromIncluding D == D :| [      E]
+  assert $ upFromIncluding E == E :| [       ]
+
   log "downFrom"
   assert $ downFrom D == [C, B, A]
   assert $ downFrom B == [      A]
@@ -81,4 +87,3 @@ testEnum = do
   assert $ fromEnum (Left false :: Either Boolean T) == 0
   assert $ fromEnum (Left true :: Either Boolean T) == 1
   assert $ fromEnum (Right B :: Either Boolean T) == 3
-

@@ -5,6 +5,7 @@ module Data.Enum
   , enumFromTo
   , enumFromThenTo
   , upFrom
+  , upFromIncluding
   , downFrom
   , Cardinality(..)
   , class BoundedEnum, cardinality, toEnum, fromEnum, toEnumWithDefaults
@@ -21,6 +22,7 @@ import Data.Char (fromCharCode, toCharCode)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
 import Data.Newtype (class Newtype, unwrap)
+import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (class Unfoldable, unfoldr)
 
@@ -129,8 +131,15 @@ intStepFromTo step from to =
 diag :: forall a. a -> Tuple a a
 diag a = Tuple a a
 
+-- | Results in all successors from given Enum in some unfoldable.
+-- | Note that given Enum is not included in the result.
 upFrom :: forall a u. Enum a => Unfoldable u => a -> u a
 upFrom = unfoldr (map diag <<< succ)
+
+-- | Results in all successors of given Enum (including itself)
+-- | in some NonEmpty unfoldable.
+upFromIncluding :: ∀ a u. Enum a => Unfoldable u => a -> NonEmpty u a
+upFromIncluding x = x :| upFrom x
 
 downFrom :: forall a u. Enum a => Unfoldable u => a -> u a
 downFrom = unfoldr (map diag <<< pred)
