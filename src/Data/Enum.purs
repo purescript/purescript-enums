@@ -39,10 +39,12 @@ derive newtype instance ordCardinality :: Ord (Cardinality a)
 -- | Type class for enumerations.
 -- |
 -- | Laws:
--- | - `succ a > pred a`
--- | - `pred a < succ a`
--- | - `pred >=> succ >=> pred = pred`
--- | - `succ >=> pred >=> succ = succ`
+-- | - Successor: `maybe true (a < _) (succ a)`
+-- | - Predecessor: `maybe true (_ < a) (pred a)`
+-- | - Succ retracts pred: `pred a >>= succ >>= pred = pred a`
+-- | - Pred retracts succ: `succ a >>= pred >>= succ = succ a`
+-- | - Non-skipping succ: `b <= a || maybe false (_ <= b) (succ a)`
+-- | - Non-skipping pred: `a <= b || maybe false (b <= _) (pred a)`
 class Ord a <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
@@ -157,8 +159,8 @@ downFrom = unfoldr (map diag <<< pred)
 -- | - ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
 -- | - ```forall a > bottom: pred a >>= succ == Just a```
 -- | - ```forall a < top:  succ a >>= pred == Just a```
--- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
--- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+-- | - ```forall a > bottom: fromEnum <$> pred a = pred (fromEnum a)```
+-- | - ```forall a < top:  fromEnum <$> succ a = succ (fromEnum a)```
 -- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
 -- | - ```toEnum (fromEnum a) = Just a```
 class (Bounded a, Enum a) <= BoundedEnum a where
