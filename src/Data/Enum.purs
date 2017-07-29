@@ -39,12 +39,22 @@ derive newtype instance ordCardinality :: Ord (Cardinality a)
 -- | Type class for enumerations.
 -- |
 -- | Laws:
--- | - Successor: `maybe true (a < _) (succ a)`
--- | - Predecessor: `maybe true (_ < a) (pred a)`
--- | - Succ retracts pred: `pred a >>= succ >>= pred = pred a`
--- | - Pred retracts succ: `succ a >>= pred >>= succ = succ a`
--- | - Non-skipping succ: `b <= a || maybe false (_ <= b) (succ a)`
--- | - Non-skipping pred: `a <= b || maybe false (b <= _) (pred a)`
+-- | - Successor: `all (a < _) (succ a)`
+-- | - Predecessor: `all (_ < a) (pred a)`
+-- | - Succ retracts pred: `pred >=> succ >=> pred = pred`
+-- | - Pred retracts succ: `succ >=> pred >=> succ = succ`
+-- | - Non-skipping succ: `b <= a || any (_ <= b) (succ a)`
+-- | - Non-skipping pred: `a <= b || any (b <= _) (pred a)`
+-- |
+-- | The retraction laws can intuitively be understood as saying that `succ` is
+-- | the opposite of `pred`; if you apply `succ` and then `pred` to something,
+-- | you should end up with what you started with (although of course this
+-- | doesn't apply if you tried to `succ` the last value in an enumeration and
+-- | therefore got `Nothing` out). The non-skipping laws can intuitively be
+-- | understood as saying that `succ` shouldn't skip over any elements of your
+-- | type. For example, without the non-skipping laws, it would be permissible
+-- | to write an `Enum Int` instance where `succ x = Just (x+2)`, and similarly
+-- | `pred x = Just (x-2)`.
 class Ord a <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
