@@ -39,10 +39,22 @@ derive newtype instance ordCardinality :: Ord (Cardinality a)
 -- | Type class for enumerations.
 -- |
 -- | Laws:
--- | - `succ a > pred a`
--- | - `pred a < succ a`
--- | - `pred >=> succ >=> pred = pred`
--- | - `succ >=> pred >=> succ = succ`
+-- | - Successor: `all (a < _) (succ a)`
+-- | - Predecessor: `all (_ < a) (pred a)`
+-- | - Succ retracts pred: `pred >=> succ >=> pred = pred`
+-- | - Pred retracts succ: `succ >=> pred >=> succ = succ`
+-- | - Non-skipping succ: `b <= a || any (_ <= b) (succ a)`
+-- | - Non-skipping pred: `a <= b || any (b <= _) (pred a)`
+-- |
+-- | The retraction laws can intuitively be understood as saying that `succ` is
+-- | the opposite of `pred`; if you apply `succ` and then `pred` to something,
+-- | you should end up with what you started with (although of course this
+-- | doesn't apply if you tried to `succ` the last value in an enumeration and
+-- | therefore got `Nothing` out). The non-skipping laws can intuitively be
+-- | understood as saying that `succ` shouldn't skip over any elements of your
+-- | type. For example, without the non-skipping laws, it would be permissible
+-- | to write an `Enum Int` instance where `succ x = Just (x+2)`, and similarly
+-- | `pred x = Just (x-2)`.
 class Ord a <= Enum a where
   succ :: a -> Maybe a
   pred :: a -> Maybe a
@@ -157,8 +169,8 @@ downFrom = unfoldr (map diag <<< pred)
 -- | - ```pred top    >>= pred >>= pred ... pred [cardinality - 1 times] == bottom```
 -- | - ```forall a > bottom: pred a >>= succ == Just a```
 -- | - ```forall a < top:  succ a >>= pred == Just a```
--- | - ```forall a > bottom: fromEnum <$> pred a = Just (fromEnum a - 1)```
--- | - ```forall a < top:  fromEnum <$> succ a = Just (fromEnum a + 1)```
+-- | - ```forall a > bottom: fromEnum <$> pred a = pred (fromEnum a)```
+-- | - ```forall a < top:  fromEnum <$> succ a = succ (fromEnum a)```
 -- | - ```e1 `compare` e2 == fromEnum e1 `compare` fromEnum e2```
 -- | - ```toEnum (fromEnum a) = Just a```
 class (Bounded a, Enum a) <= BoundedEnum a where
