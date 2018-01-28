@@ -247,14 +247,14 @@ defaultCardinality :: forall a. Bounded a => Enum a => Cardinality a
 defaultCardinality = Cardinality $ defaultCardinality' 1 (bottom :: a) where
   defaultCardinality' i = maybe i (defaultCardinality' $ i + 1) <<< succ
 
-  -- | Runs in `O(n)` where `n` is `fromEnum a`
+-- | Runs in `O(n)` where `n` is `fromEnum a`
 defaultToEnum :: forall a. Bounded a => Enum a => Int -> Maybe a
 defaultToEnum n
   | n < 0 = Nothing
   | n == 0 = Just bottom
   | otherwise = defaultToEnum (n - 1) >>= succ
 
-  -- | Runs in `O(n)` where `n` is `fromEnum a`
+-- | Runs in `O(n)` where `n` is `fromEnum a`
 defaultFromEnum :: forall a. Enum a => a -> Int
 defaultFromEnum = maybe 0 (\prd -> defaultFromEnum prd + 1) <<< pred
 

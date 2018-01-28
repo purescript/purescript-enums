@@ -20,10 +20,14 @@
   "dependencies": {
     "purescript-either": "^3.0.0",
     "purescript-strings": "^3.0.0",
-    "purescript-unfoldable": "^3.0.0"
+    "purescript-unfoldable": "^3.0.0",
+    "purescript-arrays": "matthewleon/purescript-arrays#nonempty"
   },
   "devDependencies": {
     "purescript-assert": "^3.0.0",
     "purescript-console": "^3.0.0"
+  },
+  "resolutions": {
+    "purescript-arrays": "nonempty"
   }
 }
