@@ -2,8 +2,8 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
+import Effect (Effect)
+import Effect.Console (log)
 
 import Data.Newtype (unwrap)
 import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Either (Either(..))
 
-import Test.Assert (ASSERT, assert)
+import Test.Assert (assert)
 
 data T = A | B | C | D | E
 
@@ -42,7 +42,7 @@ instance boundedEnumT :: BoundedEnum T where
   toEnum = defaultToEnum
   fromEnum = defaultFromEnum
 
-testEnum :: Eff (console :: CONSOLE, assert :: ASSERT) Unit
+testEnum :: Effect Unit
 testEnum = do
   log "enumFromTo"
   assert $ enumFromTo A A == [A]
