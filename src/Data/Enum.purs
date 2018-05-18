@@ -20,7 +20,7 @@ import Control.MonadPlus (guard)
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (class Unfoldable, unfoldr)
@@ -201,41 +201,6 @@ instance boundedEnumOrdering :: BoundedEnum Ordering where
   fromEnum LT = 0
   fromEnum EQ = 1
   fromEnum GT = 2
-
-instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
-  cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
-  toEnum 0 = pure Nothing
-  toEnum n = Just <$> toEnum (n - 1)
-  fromEnum Nothing = 0
-  fromEnum (Just e) = fromEnum e + 1
-
-instance boundedEnumEither :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Either a b) where
-  cardinality =
-    Cardinality
-      $ unwrap (cardinality :: Cardinality a)
-      + unwrap (cardinality :: Cardinality b)
-  toEnum n = to cardinality
-    where
-    to :: Cardinality a -> Maybe (Either a b)
-    to (Cardinality ca)
-      | n >= 0 && n < ca = Left <$> toEnum n
-      | otherwise = Right <$> toEnum (n - ca)
-  fromEnum (Left a) = fromEnum a
-  fromEnum (Right b) = fromEnum b + unwrap (cardinality :: Cardinality a)
-
-instance boundedEnumTuple :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Tuple a b) where
-  cardinality =
-    Cardinality
-      $ unwrap (cardinality :: Cardinality a)
-      * unwrap (cardinality :: Cardinality b)
-  toEnum = to cardinality
-    where
-    to :: Cardinality b -> Int -> Maybe (Tuple a b)
-    to (Cardinality cb) n = Tuple <$> toEnum (n / cb) <*> toEnum (n `mod` cb)
-  fromEnum = from cardinality
-    where
-    from :: Cardinality b -> Tuple a b -> Int
-    from (Cardinality cb) (Tuple a b) = fromEnum a * cb + fromEnum b
 
 -- | Runs in `O(n)` where `n` is `fromEnum top`
 defaultCardinality :: forall a. Bounded a => Enum a => Cardinality a

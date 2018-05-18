@@ -2,17 +2,11 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Effect (Effect)
-import Effect.Console (log)
-
-import Data.Newtype (unwrap)
-import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
-                  defaultCardinality, enumFromTo, enumFromThenTo, upFrom, upFromIncluding,
-                  downFrom, toEnum, fromEnum, Cardinality, cardinality)
+import Data.Enum (class BoundedEnum, class Enum, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Either (Either(..))
-
+import Effect (Effect)
+import Effect.Console (log)
 import Test.Assert (assert)
 
 data T = A | B | C | D | E
@@ -71,19 +65,3 @@ testEnum = do
   assert $ downFrom D == [C, B, A]
   assert $ downFrom B == [      A]
   assert $ downFrom A == [       ]
-
-  log "BoundedEnum (Maybe Boolean)"
-  assert $ toEnum (-1) == Nothing :: Maybe (Maybe Boolean)
-  assert $ toEnum 0 == Just Nothing :: Maybe (Maybe Boolean)
-  assert $ toEnum 1 == Just (Just false) :: Maybe (Maybe Boolean)
-  assert $ toEnum 2 == Just (Just true) :: Maybe (Maybe Boolean)
-  assert $ toEnum 3 == Nothing :: Maybe (Maybe Boolean)
-
-  log "BoundedEnum (Either _ _)"
-  assert $ unwrap (cardinality :: Cardinality (Either Boolean Boolean)) == 4
-  assert $ toEnum 0 == Just (Left false :: Either Boolean T)
-  assert $ toEnum 1 == Just (Left true :: Either Boolean T)
-  assert $ toEnum 3 == Just (Right B :: Either Boolean T)
-  assert $ fromEnum (Left false :: Either Boolean T) == 0
-  assert $ fromEnum (Left true :: Either Boolean T) == 1
-  assert $ fromEnum (Right B :: Either Boolean T) == 3
