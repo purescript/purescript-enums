@@ -18,7 +18,6 @@ import Prelude
 
 import Control.MonadPlus (guard)
 
-import Data.Char (fromCharCode, toCharCode)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
 import Data.Newtype (class Newtype, unwrap)
@@ -72,10 +71,6 @@ instance enumInt :: Enum Int where
 instance enumChar :: Enum Char where
   succ = defaultSucc charToEnum toCharCode
   pred = defaultPred charToEnum toCharCode
-
-charToEnum :: Int -> Maybe Char
-charToEnum n | n >= bottom && n <= top = Just $ fromCharCode n
-charToEnum _ = Nothing
 
 instance enumUnit :: Enum Unit where
   succ = const Nothing
@@ -272,3 +267,10 @@ toEnumWithDefaults :: forall a. BoundedEnum a => a -> a -> Int -> a
 toEnumWithDefaults b t x = case toEnum x of
   Just enum -> enum
   Nothing -> if x < fromEnum (bottom :: a) then b else t
+
+charToEnum :: Int -> Maybe Char
+charToEnum n | n >= bottom && n <= top = Just $ fromCharCode n
+charToEnum _ = Nothing
+
+foreign import toCharCode :: Char -> Int
+foreign import fromCharCode :: Int -> Char

@@ -19,8 +19,9 @@
   ],
   "dependencies": {
     "purescript-either": "#compiler/0.12",
-    "purescript-strings": "#compiler/0.12",
-    "purescript-unfoldable": "#compiler/0.12"
+    "purescript-unfoldable": "#compiler/0.12",
+    "purescript-nonempty": "#compiler/0.12",
+    "purescript-gen": "#compiler/0.12"
   },
   "devDependencies": {
     "purescript-assert": "#compiler/0.12",
