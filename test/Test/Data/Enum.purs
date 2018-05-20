@@ -2,7 +2,7 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Data.Enum (class BoundedEnum, class Enum, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
+import Data.Enum (class BoundedEnum, class Enum, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Effect (Effect)
@@ -53,7 +53,7 @@ testEnum = do
     }
   assertEqual
     { actual: enumFromTo B A
-    , expected: []
+    , expected: [B, A]
     }
   assertEqual
     { actual: enumFromTo A C
@@ -62,6 +62,14 @@ testEnum = do
   assertEqual
     { actual: enumFromTo A E
     , expected: [A, B, C, D, E]
+    }
+  assertEqual
+    { actual: enumFromTo 0 3
+    , expected: [0, 1, 2, 3]
+    }
+  assertEqual
+    { actual: enumFromTo 'c' 'a'
+    , expected: ['c', 'b', 'a']
     }
 
   log "enumFromThenTo"
@@ -103,6 +111,10 @@ testEnum = do
   log "upFromIncluding"
   assertEqual
     { actual: upFromIncluding B
+    , expected: [B, C, D, E]
+    }
+  assertEqual
+    { actual: upFromIncluding B
     , expected: B :| [C, D, E]
     }
   assertEqual
@@ -126,4 +138,18 @@ testEnum = do
   assertEqual
     { actual: downFrom A
     , expected: []
+    }
+
+  log "downFromIncluding"
+  assertEqual
+    { actual: downFromIncluding D
+    , expected: [D, C, B, A]
+    }
+  assertEqual
+    { actual: downFromIncluding B
+    , expected: [B, A]
+    }
+  assertEqual
+    { actual: downFromIncluding A
+    , expected: [A]
     }
