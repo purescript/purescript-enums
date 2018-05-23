@@ -2,23 +2,25 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
-
-import Data.Newtype (unwrap)
-import Data.Enum (class Enum, class BoundedEnum, defaultToEnum, defaultFromEnum,
-                  defaultCardinality, enumFromTo, enumFromThenTo, upFrom, upFromIncluding,
-                  downFrom, toEnum, fromEnum, Cardinality, cardinality)
+import Data.Enum (class BoundedEnum, class Enum, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Either (Either(..))
-
-import Test.Assert (ASSERT, assert)
+import Effect (Effect)
+import Effect.Console (log)
+import Test.Assert (assertEqual)
 
 data T = A | B | C | D | E
 
 derive instance eqT  :: Eq  T
 derive instance ordT :: Ord T
+
+instance showT :: Show T where
+  show = case _ of
+    A -> "A"
+    B -> "B"
+    C -> "C"
+    D -> "D"
+    E -> "E"
 
 instance enumT :: Enum T where
   succ A = Just B
@@ -42,48 +44,112 @@ instance boundedEnumT :: BoundedEnum T where
   toEnum = defaultToEnum
   fromEnum = defaultFromEnum
 
-testEnum :: Eff (console :: CONSOLE, assert :: ASSERT) Unit
+testEnum :: Effect Unit
 testEnum = do
   log "enumFromTo"
-  assert $ enumFromTo A A == [A]
-  assert $ enumFromTo B A == []
-  assert $ enumFromTo A C == [A, B, C]
-  assert $ enumFromTo A E == [A, B, C, D, E]
+  assertEqual
+    { actual: enumFromTo A A
+    , expected: [A]
+    }
+  assertEqual
+    { actual: enumFromTo B A
+    , expected: [B, A]
+    }
+  assertEqual
+    { actual: enumFromTo A C
+    , expected: [A, B, C]
+    }
+  assertEqual
+    { actual: enumFromTo A E
+    , expected: [A, B, C, D, E]
+    }
+  assertEqual
+    { actual: enumFromTo 0 3
+    , expected: [0, 1, 2, 3]
+    }
+  assertEqual
+    { actual: enumFromTo 'c' 'a'
+    , expected: ['c', 'b', 'a']
+    }
 
   log "enumFromThenTo"
-  assert $ enumFromThenTo A B E == [A, B, C, D, E]
-  assert $ enumFromThenTo A C E == [A,    C,    E]
-  assert $ enumFromThenTo A E E == [A,          E]
-  assert $ enumFromThenTo A C C == [A,    C      ]
-  assert $ enumFromThenTo A C D == [A,    C      ]
+  assertEqual
+    { actual: enumFromThenTo A B E
+    , expected: [A, B, C, D, E]
+    }
+  assertEqual
+    { actual: enumFromThenTo A C E
+    , expected: [A, C, E]
+    }
+  assertEqual
+    { actual: enumFromThenTo A E E
+    , expected: [A, E]
+    }
+  assertEqual
+    { actual: enumFromThenTo A C C
+    , expected: [A, C]
+    }
+  assertEqual
+    { actual: enumFromThenTo A C D
+    , expected: [A, C]
+    }
 
   log "upFrom"
-  assert $ upFrom B == [C, D, E]
-  assert $ upFrom D == [      E]
-  assert $ upFrom E == [       ]
+  assertEqual
+    { actual: upFrom B
+    , expected: [C, D, E]
+    }
+  assertEqual
+    { actual: upFrom D
+    , expected: [E]
+    }
+  assertEqual
+    { actual: upFrom E
+    , expected: []
+    }
 
   log "upFromIncluding"
-  assert $ upFromIncluding B == B :| [C, D, E]
-  assert $ upFromIncluding D == D :| [      E]
-  assert $ upFromIncluding E == E :| [       ]
+  assertEqual
+    { actual: upFromIncluding B
+    , expected: [B, C, D, E]
+    }
+  assertEqual
+    { actual: upFromIncluding B
+    , expected: B :| [C, D, E]
+    }
+  assertEqual
+    { actual: upFromIncluding D
+    , expected: D :| [E]
+    }
+  assertEqual
+    { actual: upFromIncluding E
+    , expected: E :| []
+    }
 
   log "downFrom"
-  assert $ downFrom D == [C, B, A]
-  assert $ downFrom B == [      A]
-  assert $ downFrom A == [       ]
+  assertEqual
+    { actual: downFrom D
+    , expected: [C, B, A]
+    }
+  assertEqual
+    { actual: downFrom B
+    , expected: [A]
+    }
+  assertEqual
+    { actual: downFrom A
+    , expected: []
+    }
 
-  log "BoundedEnum (Maybe Boolean)"
-  assert $ toEnum (-1) == Nothing :: Maybe (Maybe Boolean)
-  assert $ toEnum 0 == Just Nothing :: Maybe (Maybe Boolean)
-  assert $ toEnum 1 == Just (Just false) :: Maybe (Maybe Boolean)
-  assert $ toEnum 2 == Just (Just true) :: Maybe (Maybe Boolean)
-  assert $ toEnum 3 == Nothing :: Maybe (Maybe Boolean)
-
-  log "BoundedEnum (Either _ _)"
-  assert $ unwrap (cardinality :: Cardinality (Either Boolean Boolean)) == 4
-  assert $ toEnum 0 == Just (Left false :: Either Boolean T)
-  assert $ toEnum 1 == Just (Left true :: Either Boolean T)
-  assert $ toEnum 3 == Just (Right B :: Either Boolean T)
-  assert $ fromEnum (Left false :: Either Boolean T) == 0
-  assert $ fromEnum (Left true :: Either Boolean T) == 1
-  assert $ fromEnum (Right B :: Either Boolean T) == 3
+  log "downFromIncluding"
+  assertEqual
+    { actual: downFromIncluding D
+    , expected: [D, C, B, A]
+    }
+  assertEqual
+    { actual: downFromIncluding B
+    , expected: [B, A]
+    }
+  assertEqual
+    { actual: downFromIncluding A
+    , expected: [A]
+    }

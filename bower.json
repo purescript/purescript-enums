@@ -1,8 +1,7 @@
 {
   "name": "purescript-enums",
   "homepage": "https://github.com/purescript/purescript-enums",
-  "description": "Operations for sequentially ordered types",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "git://github.com/purescript/purescript-enums.git"
@@ -18,12 +17,19 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-either": "^3.0.0",
-    "purescript-strings": "^3.0.0",
-    "purescript-unfoldable": "^3.0.0"
+    "purescript-control": "^4.0.0",
+    "purescript-either": "^4.0.0",
+    "purescript-gen": "^2.0.0",
+    "purescript-maybe": "^4.0.0",
+    "purescript-newtype": "^3.0.0",
+    "purescript-nonempty": "^5.0.0",
+    "purescript-partial": "^2.0.0",
+    "purescript-prelude": "^4.0.0",
+    "purescript-tuples": "^5.0.0",
+    "purescript-unfoldable": "^4.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^3.0.0",
-    "purescript-console": "^3.0.0"
+    "purescript-assert": "^4.0.0",
+    "purescript-console": "^4.0.0"
   }
 }
