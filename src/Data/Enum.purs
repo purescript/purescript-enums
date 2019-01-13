@@ -268,9 +268,11 @@ defaultPred toEnum' fromEnum' a = toEnum' (fromEnum' a - 1)
 -- |
 -- | Runs in `O(n)` where `n` is `fromEnum top`
 defaultCardinality :: forall a. Bounded a => Enum a => Cardinality a
-defaultCardinality = Cardinality $ defaultCardinality' 1 (bottom :: a)
-  where
-    defaultCardinality' i = maybe i (defaultCardinality' (i + 1)) <<< succ
+defaultCardinality = Cardinality $ go 1 (bottom :: a) where
+  go i x =
+    case succ x of
+      Just x' -> go (i + 1) x'
+      Nothing -> i
 
 -- | Provides a default implementation for `toEnum`.
 -- |
@@ -279,10 +281,18 @@ defaultCardinality = Cardinality $ defaultCardinality' 1 (bottom :: a)
 -- |
 -- | Runs in `O(n)` where `n` is `fromEnum a`.
 defaultToEnum :: forall a. Bounded a => Enum a => Int -> Maybe a
-defaultToEnum n
-  | n < 0 = Nothing
-  | n == 0 = Just bottom
-  | otherwise = defaultToEnum (n - 1) >>= succ
+defaultToEnum i' =
+  if i' < 0
+    then Nothing
+    else go i' bottom
+  where
+  go i x =
+    if i == 0
+      then Just x
+      -- We avoid using >>= here because it foils tail-call optimization
+      else case succ x of
+              Just x' -> go (i - 1) x'
+              Nothing -> Nothing
 
 -- | Provides a default implementation for `fromEnum`.
 -- |
@@ -291,7 +301,11 @@ defaultToEnum n
 -- |
 -- | Runs in `O(n)` where `n` is `fromEnum a`.
 defaultFromEnum :: forall a. Enum a => a -> Int
-defaultFromEnum = maybe 0 (\prd -> defaultFromEnum prd + 1) <<< pred
+defaultFromEnum = go 0 where
+  go i x =
+    case pred x of
+      Just x' -> go (i + 1) x'
+      Nothing -> i
 
 diag :: forall a. a -> Tuple a a
 diag a = Tuple a a
