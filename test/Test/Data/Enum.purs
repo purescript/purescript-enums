@@ -46,23 +46,23 @@ instance boundedEnumT :: BoundedEnum T where
   fromEnum = defaultFromEnum
 
 -- | A newtype over Int which is supposed to represent Ints bounded between 0
--- | and 10,000. Why 10,000? It's just about large enough that we'll most
--- | likely see stack overflow errors if we've managed to break TCO.
-newtype Upto10k = Upto10k Int
+-- | and 100,000. Why 100,000? It seems to be large enough that we are very
+-- | likely to see stack overflow errors if we've managed to break TCO.
+newtype Upto100k = Upto100k Int
 
-derive newtype instance eqUpto10k :: Eq Upto10k
-derive newtype instance ordUpto10k :: Ord Upto10k
-derive newtype instance showUpto10k :: Show Upto10k
+derive newtype instance eqUpto100k :: Eq Upto100k
+derive newtype instance ordUpto100k :: Ord Upto100k
+derive newtype instance showUpto100k :: Show Upto100k
 
-instance boundedUpto10k :: Bounded Upto10k where
-  top = Upto10k 10000
-  bottom = Upto10k 0
+instance boundedUpto100k :: Bounded Upto100k where
+  top = Upto100k 100000
+  bottom = Upto100k 0
 
-instance enumUpto10k :: Enum Upto10k where
-  succ (Upto10k x) = if (x+1) > 10000 then Nothing else Just (Upto10k (x+1))
-  pred (Upto10k x) = if (x-1) < 0 then Nothing else Just (Upto10k (x-1))
+instance enumUpto100k :: Enum Upto100k where
+  succ (Upto100k x) = if (x+1) > 100000 then Nothing else Just (Upto100k (x+1))
+  pred (Upto100k x) = if (x-1) < 0 then Nothing else Just (Upto100k (x-1))
 
-instance boundedEnumUpto10k :: BoundedEnum Upto10k where
+instance boundedEnumUpto100k :: BoundedEnum Upto100k where
   cardinality = defaultCardinality
   toEnum = defaultToEnum
   fromEnum = defaultFromEnum
@@ -179,18 +179,18 @@ testEnum = do
 
   log "defaultCardinality is stack safe"
   assertEqual
-    { actual: unwrap (defaultCardinality :: Cardinality Upto10k)
-    , expected: 10001
+    { actual: unwrap (defaultCardinality :: Cardinality Upto100k)
+    , expected: 100001
     }
 
   log "defaultToEnum is stack safe"
   assertEqual
-    { actual: defaultToEnum 10000
-    , expected: Just (Upto10k 10000)
+    { actual: defaultToEnum 100000
+    , expected: Just (Upto100k 100000)
     }
 
   log "defaultFromEnum is stack safe"
   assertEqual
-    { actual: defaultFromEnum (Upto10k 10000)
-    , expected: 10000
+    { actual: defaultFromEnum (Upto100k 100000)
+    , expected: 100000
     }
