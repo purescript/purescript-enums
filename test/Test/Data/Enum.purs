@@ -2,8 +2,9 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Data.Enum (class BoundedEnum, class Enum, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
+import Data.Enum (class BoundedEnum, class Enum, Cardinality, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
 import Effect (Effect)
 import Effect.Console (log)
@@ -40,6 +41,28 @@ instance boundedT :: Bounded T where
   top = E
 
 instance boundedEnumT :: BoundedEnum T where
+  cardinality = defaultCardinality
+  toEnum = defaultToEnum
+  fromEnum = defaultFromEnum
+
+-- | A newtype over Int which is supposed to represent Ints bounded between 0
+-- | and 100,000. Why 100,000? It seems to be large enough that we are very
+-- | likely to see stack overflow errors if we've managed to break TCO.
+newtype Upto100k = Upto100k Int
+
+derive newtype instance eqUpto100k :: Eq Upto100k
+derive newtype instance ordUpto100k :: Ord Upto100k
+derive newtype instance showUpto100k :: Show Upto100k
+
+instance boundedUpto100k :: Bounded Upto100k where
+  top = Upto100k 100000
+  bottom = Upto100k 0
+
+instance enumUpto100k :: Enum Upto100k where
+  succ (Upto100k x) = if (x+1) > 100000 then Nothing else Just (Upto100k (x+1))
+  pred (Upto100k x) = if (x-1) < 0 then Nothing else Just (Upto100k (x-1))
+
+instance boundedEnumUpto100k :: BoundedEnum Upto100k where
   cardinality = defaultCardinality
   toEnum = defaultToEnum
   fromEnum = defaultFromEnum
@@ -152,4 +175,22 @@ testEnum = do
   assertEqual
     { actual: downFromIncluding A
     , expected: [A]
+    }
+
+  log "defaultCardinality is stack safe"
+  assertEqual
+    { actual: unwrap (defaultCardinality :: Cardinality Upto100k)
+    , expected: 100001
+    }
+
+  log "defaultToEnum is stack safe"
+  assertEqual
+    { actual: defaultToEnum 100000
+    , expected: Just (Upto100k 100000)
+    }
+
+  log "defaultFromEnum is stack safe"
+  assertEqual
+    { actual: defaultFromEnum (Upto100k 100000)
+    , expected: 100000
     }
