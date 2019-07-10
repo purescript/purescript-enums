@@ -320,13 +320,16 @@ foreign import toCharCode :: Char -> Int
 foreign import fromCharCode :: Int -> Char
 
 
--- | A lawful subclass  of `Bounded `to denote
+-- | A lawful subclass  of `Bounded` to denote
 -- | Cardinality a << Cardinality Int
 class Bounded a <= SmallBounded a
 
 -- | A lawful subclass of `BoundedEnum` to denote
 -- | Cardinality a << Cardinality Int
 class BoundedEnum a <= SmallBoundedEnum a
+
+instance smallBoundedEnum :: (SmallBounded a, BoundedEnum a)
+  => SmallBoundedEnum a
 
 instance boundedEnumMaybe :: (SmallBounded a, BoundedEnum a)
   => BoundedEnum (Maybe a) where
