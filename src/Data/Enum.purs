@@ -21,7 +21,7 @@ import Prelude
 import Control.MonadPlus (guard)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, fromJust)
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (class Unfoldable, singleton, unfoldr)
 import Data.Unfoldable1 (class Unfoldable1, unfoldr1)
@@ -316,3 +316,19 @@ charToEnum _ = Nothing
 
 foreign import toCharCode :: Char -> Int
 foreign import fromCharCode :: Int -> Char
+
+
+-- | A lawful subclass  of `Bounded `to denote
+-- | Cardinality a << Cardinality Int
+class Bounded a <= SmallBounded a
+
+-- | A lawful subclass of `BoundedEnum` to denote
+-- | Cardinality a << Cardinality Int
+class BoundedEnum a <= SmallBoundedEnum a
+
+instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
+  cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
+  toEnum 0 = Nothing
+  toEnum n = Just <$> toEnum (n - 1)
+  fromEnum Nothing = 0
+  fromEnum (Just e) = fromEnum e + 1
