@@ -14,6 +14,8 @@ module Data.Enum
   , defaultCardinality
   , defaultToEnum
   , defaultFromEnum
+  , class SmallBounded
+  , class SmallBoundedEnum
   ) where
 
 import Prelude
@@ -326,9 +328,10 @@ class Bounded a <= SmallBounded a
 -- | Cardinality a << Cardinality Int
 class BoundedEnum a <= SmallBoundedEnum a
 
-instance boundedEnumMaybe :: BoundedEnum a => BoundedEnum (Maybe a) where
-  cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
-  toEnum 0 = Nothing
-  toEnum n = Just <$> toEnum (n - 1)
-  fromEnum Nothing = 0
-  fromEnum (Just e) = fromEnum e + 1
+instance boundedEnumMaybe :: (SmallBounded a, BoundedEnum a)
+  => BoundedEnum (Maybe a) where
+    cardinality = Cardinality $ unwrap (cardinality :: Cardinality a) + 1
+    toEnum 0 = Nothing
+    toEnum n = Just <$> toEnum (n - 1)
+    fromEnum Nothing = 0
+    fromEnum (Just e) = fromEnum e + 1
