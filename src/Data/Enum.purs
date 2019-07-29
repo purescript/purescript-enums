@@ -338,3 +338,6 @@ instance boundedEnumMaybe :: (SmallBounded a, BoundedEnum a)
     toEnum n = Just <$> toEnum (n - 1)
     fromEnum Nothing = 0
     fromEnum (Just e) = fromEnum e + 1
+
+instance smallBoundedBoolean :: SmallBounded Boolean
+
