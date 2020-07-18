@@ -162,6 +162,8 @@ toEnumWithDefaults low high x = case toEnum x of
 -- | A type for the size of finite enumerations.
 newtype Cardinality a = Cardinality Int
 
+type role Cardinality representational
+
 derive instance newtypeCardinality :: Newtype (Cardinality a) _
 derive newtype instance eqCardinality :: Eq (Cardinality a)
 derive newtype instance ordCardinality :: Ord (Cardinality a)
