@@ -160,6 +160,7 @@ toEnumWithDefaults low high x = case toEnum x of
   Nothing -> if x < fromEnum (bottom :: a) then low else high
 
 -- | A type for the size of finite enumerations.
+newtype Cardinality :: forall k. k -> Type
 newtype Cardinality a = Cardinality Int
 
 type role Cardinality representational
