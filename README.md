@@ -1,14 +1,14 @@
 # purescript-enums
 
 [![Latest release](http://img.shields.io/github/release/purescript/purescript-enums.svg)](https://github.com/purescript/purescript-enums/releases)
-[![Build status](https://travis-ci.org/purescript/purescript-enums.svg?branch=master)](https://travis-ci.org/purescript/purescript-enums)
+[![Build status](https://github.com/purescript/purescript-enums/workflows/CI/badge.svg?branch=master)](https://github.com/purescript/purescript-enums/actions?query=workflow%3ACI+branch%3Amaster)
 
 Operations for sequentially ordered types.
 
 ## Installation
 
 ```
-bower install purescript-enums
+spago install enums
 ```
 
 ## Documentation
