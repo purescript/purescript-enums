@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..), cardinality, fromEnum, pred, succ, toEnum)
 import Data.Generic.Rep (class Generic, Argument(..), Constructor(..), NoArguments(..), Product(..), Sum(..), from, to)
-import Data.Generic.Rep.Bounded (class GenericBottom, class GenericTop, genericBottom', genericTop')
+import Data.Bounded.Generic (class GenericBottom, class GenericTop, genericBottom', genericTop')
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 
