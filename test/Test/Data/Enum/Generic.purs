@@ -1,4 +1,4 @@
-module Test.Main where
+module Test.Data.Enum.Generic where
 
 import Prelude
 
