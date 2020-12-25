@@ -11,7 +11,7 @@ import Data.Ord.Generic as GOrd
 import Data.Show.Generic as GShow
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Console (log, logShow)
+import Effect.Console (log)
 import Test.Assert (assert)
 
 data SimpleBounded = A | B | C | D
