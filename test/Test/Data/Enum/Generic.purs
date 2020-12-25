@@ -4,11 +4,11 @@ import Prelude
 
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..), cardinality, fromEnum, pred, succ, toEnum, enumFromTo)
 import Data.Generic.Rep as G
-import Data.Generic.Rep.Bounded as GBounded
-import Data.Generic.Rep.Enum as GEnum
-import Data.Generic.Rep.Eq as GEq
-import Data.Generic.Rep.Ord as GOrd
-import Data.Generic.Rep.Show as GShow
+import Data.Bounded.Generic as GBounded
+import Data.Enum.Generic as GEnum
+import Data.Eq.Generic as GEq
+import Data.Ord.Generic as GOrd
+import Data.Show.Generic as GShow
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log, logShow)
