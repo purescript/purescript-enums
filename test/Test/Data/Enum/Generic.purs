@@ -90,8 +90,8 @@ instance boundedEnumPair :: (BoundedEnum a, BoundedEnum b) => BoundedEnum (Pair 
   toEnum = GEnum.genericToEnum
   fromEnum = GEnum.genericFromEnum
 
-main :: Effect Unit
-main = do
+testGenericEnum :: Effect Unit
+testGenericEnum = do
   log "Checking simple pred bottom"
   assert $ pred (bottom :: SimpleBounded) == Nothing
 
