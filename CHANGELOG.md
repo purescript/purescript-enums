@@ -5,12 +5,16 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes:
+- Updated code for PureScript 0.14 (#44)
 
 New features:
+- Absorbed `Data.Enum.Generic` from `generics-rep` (#46)
 
 Bugfixes:
 
 Other improvements:
+- Migrated CI to GitHub Actions and updated installation instructions to use Spago (#45)
+- Added a CHANGELOG.md file and pull request template (#47 #48)
 
 ## [v4.0.1](https://github.com/purescript/purescript-enums/releases/tag/v4.0.1) - 2019-01-31
 
