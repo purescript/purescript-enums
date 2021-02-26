@@ -4,7 +4,7 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "git://github.com/purescript/purescript-enums.git"
+    "url": "https://github.com/purescript/purescript-enums.git"
   },
   "ignore": [
     "**/.*",
@@ -17,19 +17,19 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-control": "master",
-    "purescript-either": "master",
-    "purescript-gen": "master",
-    "purescript-maybe": "master",
-    "purescript-newtype": "master",
-    "purescript-nonempty": "master",
-    "purescript-partial": "master",
-    "purescript-prelude": "master",
-    "purescript-tuples": "master",
-    "purescript-unfoldable": "master"
+    "purescript-control": "^5.0.0",
+    "purescript-either": "^5.0.0",
+    "purescript-gen": "^3.0.0",
+    "purescript-maybe": "^5.0.0",
+    "purescript-newtype": "^4.0.0",
+    "purescript-nonempty": "^6.0.0",
+    "purescript-partial": "^3.0.0",
+    "purescript-prelude": "^5.0.0",
+    "purescript-tuples": "^6.0.0",
+    "purescript-unfoldable": "^5.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "master",
-    "purescript-console": "master"
+    "purescript-assert": "^5.0.0",
+    "purescript-console": "^5.0.0"
   }
 }
