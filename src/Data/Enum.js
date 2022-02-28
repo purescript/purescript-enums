@@ -1,9 +1,7 @@
-"use strict";
-
-exports.toCharCode = function (c) {
+export function toCharCode(c) {
   return c.charCodeAt(0);
-};
+}
 
-exports.fromCharCode = function (c) {
+export function fromCharCode(c) {
   return String.fromCharCode(c);
-};
+}
