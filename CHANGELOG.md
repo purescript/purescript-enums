@@ -9,6 +9,7 @@ Breaking changes:
 New features:
 
 Bugfixes:
+- Fix `Char`'s `toEnum` implementation (#55 by @JordanMartinez)
 
 Other improvements:
 

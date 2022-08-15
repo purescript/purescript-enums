@@ -2,7 +2,7 @@ module Test.Data.Enum (testEnum) where
 
 import Prelude
 
-import Data.Enum (class BoundedEnum, class Enum, Cardinality, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, upFrom, upFromIncluding)
+import Data.Enum (class BoundedEnum, class Enum, Cardinality, defaultCardinality, defaultFromEnum, defaultToEnum, downFrom, downFromIncluding, enumFromThenTo, enumFromTo, fromEnum, toEnum, upFrom, upFromIncluding)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.NonEmpty ((:|))
@@ -193,4 +193,16 @@ testEnum = do
   assertEqual
     { actual: defaultFromEnum (Upto100k 100000)
     , expected: 100000
+    }
+  
+  log "charToEnum"
+  assertEqual
+    { actual: Nothing :: Maybe Char
+    , expected: toEnum (top :: Int)
+    }
+
+  log "charToEnum"
+  assertEqual
+    { actual: Just 'a'
+    , expected: toEnum (fromEnum 'a')
     }
