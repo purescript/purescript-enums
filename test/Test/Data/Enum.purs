@@ -12,7 +12,7 @@ import Test.Assert (assertEqual)
 
 data T = A | B | C | D | E
 
-derive instance eqT  :: Eq  T
+derive instance eqT :: Eq T
 derive instance ordT :: Ord T
 
 instance showT :: Show T where
@@ -59,8 +59,8 @@ instance boundedUpto100k :: Bounded Upto100k where
   bottom = Upto100k 0
 
 instance enumUpto100k :: Enum Upto100k where
-  succ (Upto100k x) = if (x+1) > 100000 then Nothing else Just (Upto100k (x+1))
-  pred (Upto100k x) = if (x-1) < 0 then Nothing else Just (Upto100k (x-1))
+  succ (Upto100k x) = if (x + 1) > 100000 then Nothing else Just (Upto100k (x + 1))
+  pred (Upto100k x) = if (x - 1) < 0 then Nothing else Just (Upto100k (x - 1))
 
 instance boundedEnumUpto100k :: BoundedEnum Upto100k where
   cardinality = defaultCardinality
@@ -72,59 +72,59 @@ testEnum = do
   log "enumFromTo"
   assertEqual
     { actual: enumFromTo A A
-    , expected: [A]
+    , expected: [ A ]
     }
   assertEqual
     { actual: enumFromTo B A
-    , expected: [B, A]
+    , expected: [ B, A ]
     }
   assertEqual
     { actual: enumFromTo A C
-    , expected: [A, B, C]
+    , expected: [ A, B, C ]
     }
   assertEqual
     { actual: enumFromTo A E
-    , expected: [A, B, C, D, E]
+    , expected: [ A, B, C, D, E ]
     }
   assertEqual
     { actual: enumFromTo 0 3
-    , expected: [0, 1, 2, 3]
+    , expected: [ 0, 1, 2, 3 ]
     }
   assertEqual
     { actual: enumFromTo 'c' 'a'
-    , expected: ['c', 'b', 'a']
+    , expected: [ 'c', 'b', 'a' ]
     }
 
   log "enumFromThenTo"
   assertEqual
     { actual: enumFromThenTo A B E
-    , expected: [A, B, C, D, E]
+    , expected: [ A, B, C, D, E ]
     }
   assertEqual
     { actual: enumFromThenTo A C E
-    , expected: [A, C, E]
+    , expected: [ A, C, E ]
     }
   assertEqual
     { actual: enumFromThenTo A E E
-    , expected: [A, E]
+    , expected: [ A, E ]
     }
   assertEqual
     { actual: enumFromThenTo A C C
-    , expected: [A, C]
+    , expected: [ A, C ]
     }
   assertEqual
     { actual: enumFromThenTo A C D
-    , expected: [A, C]
+    , expected: [ A, C ]
     }
 
   log "upFrom"
   assertEqual
     { actual: upFrom B
-    , expected: [C, D, E]
+    , expected: [ C, D, E ]
     }
   assertEqual
     { actual: upFrom D
-    , expected: [E]
+    , expected: [ E ]
     }
   assertEqual
     { actual: upFrom E
@@ -134,15 +134,15 @@ testEnum = do
   log "upFromIncluding"
   assertEqual
     { actual: upFromIncluding B
-    , expected: [B, C, D, E]
+    , expected: [ B, C, D, E ]
     }
   assertEqual
     { actual: upFromIncluding B
-    , expected: B :| [C, D, E]
+    , expected: B :| [ C, D, E ]
     }
   assertEqual
     { actual: upFromIncluding D
-    , expected: D :| [E]
+    , expected: D :| [ E ]
     }
   assertEqual
     { actual: upFromIncluding E
@@ -152,11 +152,11 @@ testEnum = do
   log "downFrom"
   assertEqual
     { actual: downFrom D
-    , expected: [C, B, A]
+    , expected: [ C, B, A ]
     }
   assertEqual
     { actual: downFrom B
-    , expected: [A]
+    , expected: [ A ]
     }
   assertEqual
     { actual: downFrom A
@@ -166,15 +166,15 @@ testEnum = do
   log "downFromIncluding"
   assertEqual
     { actual: downFromIncluding D
-    , expected: [D, C, B, A]
+    , expected: [ D, C, B, A ]
     }
   assertEqual
     { actual: downFromIncluding B
-    , expected: [B, A]
+    , expected: [ B, A ]
     }
   assertEqual
     { actual: downFromIncluding A
-    , expected: [A]
+    , expected: [ A ]
     }
 
   log "defaultCardinality is stack safe"
@@ -194,7 +194,7 @@ testEnum = do
     { actual: defaultFromEnum (Upto100k 100000)
     , expected: 100000
     }
-  
+
   log "charToEnum"
   assertEqual
     { actual: Nothing :: Maybe Char
