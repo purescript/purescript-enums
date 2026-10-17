@@ -2,7 +2,7 @@
 
 Notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased](https://github.com/purescript/purescript-enums/compare/v6.0.2...HEAD)
 
 Breaking changes:
 
@@ -12,14 +12,22 @@ Bugfixes:
 
 Other improvements:
 
+## [v6.0.2](https://github.com/purescript/purescript-enums/releases/tag/v6.0.2) - 2026-10-17
+
+Other improvements:
+
+- Migrate from Bower/Pulp to Spago and update CI, linting, and formatting (#56 by @thomashoneyman).
+
 ## [v6.0.1](https://github.com/purescript/purescript-enums/releases/tag/v6.0.1) - 2022-08-16
 
 Bugfixes:
+
 - Fix `Char`'s `toEnum` implementation (#55 by @JordanMartinez)
 
 ## [v6.0.0](https://github.com/purescript/purescript-enums/releases/tag/v6.0.0) - 2022-04-27
 
 Breaking changes:
+
 - Migrate FFI to ES modules (#51 by @sigma-andex and @JordanMartinez)
 
 New features:
@@ -31,20 +39,23 @@ Other improvements:
 ## [v5.0.0](https://github.com/purescript/purescript-enums/releases/tag/v5.0.0) - 2021-02-26
 
 Breaking changes:
+
 - Added support for PureScript 0.14 and dropped support for all previous versions (#44)
 
 New features:
+
 - Absorbed `Data.Enum.Generic` from `generics-rep` (#46)
 
 Bugfixes:
 
 Other improvements:
+
 - Migrated CI to GitHub Actions and updated installation instructions to use Spago (#45)
 - Added a CHANGELOG.md file and pull request template (#47, #48)
 
 ## [v4.0.1](https://github.com/purescript/purescript-enums/releases/tag/v4.0.1) - 2019-01-31
 
-* Fix stack-safety issues in `defaultCardinality`, `defaultToEnum`, and `defaultFromEnum`.
+- Fix stack-safety issues in `defaultCardinality`, `defaultToEnum`, and `defaultFromEnum`.
 
 ## [v4.0.0](https://github.com/purescript/purescript-enums/releases/tag/v4.0.0) - 2018-05-23
 
@@ -112,19 +123,16 @@ Initial release candidate of the library intended for the 0.7 compiler.
 ## [v0.4.0](https://github.com/purescript/purescript-enums/releases/tag/v0.4.0) - 2015-02-21
 
 **This release requires PureScript v0.6.8 or later**
+
 - Updated dependencies
 
 ## [v0.3.1](https://github.com/purescript/purescript-enums/releases/tag/v0.3.1) - 2015-02-16
-
-
 
 ## [v0.3.0](https://github.com/purescript/purescript-enums/releases/tag/v0.3.0) - 2014-12-01
 
 - Moved `toEnum` and `fromEnum` into the `Enum` class (@NightRa)
 
 ## [v0.2.4](https://github.com/purescript/purescript-enums/releases/tag/v0.2.4) - 2014-10-31
-
-
 
 ## [v0.2.3](https://github.com/purescript/purescript-enums/releases/tag/v0.2.3) - 2014-10-18
 
@@ -143,6 +151,3 @@ Initial release candidate of the library intended for the 0.7 compiler.
 Complete redesign by @jdegoes.
 
 ## [v0.1.0](https://github.com/purescript/purescript-enums/releases/tag/v0.1.0) - 2014-04-25
-
-
-
