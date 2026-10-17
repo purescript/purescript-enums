@@ -170,8 +170,5 @@ testGenericEnum = do
   assert $ toEnum (fromEnum (Some A)) == Just (Some A)
 
   log "Checking product toEnum/fromEnum roundtrip"
-  assert $
-    let
-      allPairs = enumFromTo bottom top :: Array (Pair Bit SimpleBounded)
-    in
-      (toEnum <<< fromEnum <$> allPairs) == (Just <$> allPairs)
+  let allPairs = enumFromTo bottom top :: Array (Pair Bit SimpleBounded)
+  assert $ (toEnum <<< fromEnum <$> allPairs) == (Just <$> allPairs)

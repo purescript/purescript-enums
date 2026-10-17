@@ -57,10 +57,12 @@ class Ord a <= Enum a where
   pred :: a -> Maybe a
 
 instance enumBoolean :: Enum Boolean where
-  succ false = Just true
-  succ _ = Nothing
-  pred true = Just false
-  pred _ = Nothing
+  succ = case _ of
+    false -> Just true
+    _ -> Nothing
+  pred = case _ of
+    true -> Just false
+    _ -> Nothing
 
 instance enumInt :: Enum Int where
   succ n = if n < top then Just (n + 1) else Nothing
@@ -75,24 +77,30 @@ instance enumUnit :: Enum Unit where
   pred = const Nothing
 
 instance enumOrdering :: Enum Ordering where
-  succ LT = Just EQ
-  succ EQ = Just GT
-  succ GT = Nothing
-  pred LT = Nothing
-  pred EQ = Just LT
-  pred GT = Just EQ
+  succ = case _ of
+    LT -> Just EQ
+    EQ -> Just GT
+    GT -> Nothing
+  pred = case _ of
+    LT -> Nothing
+    EQ -> Just LT
+    GT -> Just EQ
 
 instance enumMaybe :: BoundedEnum a => Enum (Maybe a) where
-  succ Nothing = Just (Just bottom)
-  succ (Just a) = Just <$> succ a
-  pred Nothing = Nothing
-  pred (Just a) = Just (pred a)
+  succ = case _ of
+    Nothing -> Just (Just bottom)
+    Just a -> Just <$> succ a
+  pred = case _ of
+    Nothing -> Nothing
+    Just a -> Just (pred a)
 
 instance enumEither :: (BoundedEnum a, BoundedEnum b) => Enum (Either a b) where
-  succ (Left a) = maybe (Just (Right bottom)) (Just <<< Left) (succ a)
-  succ (Right b) = maybe Nothing (Just <<< Right) (succ b)
-  pred (Left a) = maybe Nothing (Just <<< Left) (pred a)
-  pred (Right b) = maybe (Just (Left top)) (Just <<< Right) (pred b)
+  succ = case _ of
+    Left a -> maybe (Just (Right bottom)) (Just <<< Left) (succ a)
+    Right b -> maybe Nothing (Just <<< Right) (succ b)
+  pred = case _ of
+    Left a -> maybe Nothing (Just <<< Left) (pred a)
+    Right b -> maybe (Just (Left top)) (Just <<< Right) (pred b)
 
 instance enumTuple :: (Enum a, BoundedEnum b) => Enum (Tuple a b) where
   succ (Tuple a b) = maybe (flip Tuple bottom <$> succ a) (Just <<< Tuple a) (succ b)
@@ -122,11 +130,13 @@ class (Bounded a, Enum a) <= BoundedEnum a where
 
 instance boundedEnumBoolean :: BoundedEnum Boolean where
   cardinality = Cardinality 2
-  toEnum 0 = Just false
-  toEnum 1 = Just true
-  toEnum _ = Nothing
-  fromEnum false = 0
-  fromEnum true = 1
+  toEnum = case _ of
+    0 -> Just false
+    1 -> Just true
+    _ -> Nothing
+  fromEnum = case _ of
+    false -> 0
+    true -> 1
 
 instance boundedEnumChar :: BoundedEnum Char where
   cardinality = Cardinality (toCharCode top - toCharCode bottom)
@@ -135,19 +145,22 @@ instance boundedEnumChar :: BoundedEnum Char where
 
 instance boundedEnumUnit :: BoundedEnum Unit where
   cardinality = Cardinality 1
-  toEnum 0 = Just unit
-  toEnum _ = Nothing
+  toEnum = case _ of
+    0 -> Just unit
+    _ -> Nothing
   fromEnum = const 0
 
 instance boundedEnumOrdering :: BoundedEnum Ordering where
   cardinality = Cardinality 3
-  toEnum 0 = Just LT
-  toEnum 1 = Just EQ
-  toEnum 2 = Just GT
-  toEnum _ = Nothing
-  fromEnum LT = 0
-  fromEnum EQ = 1
-  fromEnum GT = 2
+  toEnum = case _ of
+    0 -> Just LT
+    1 -> Just EQ
+    2 -> Just GT
+    _ -> Nothing
+  fromEnum = case _ of
+    LT -> 0
+    EQ -> 1
+    GT -> 2
 
 -- | Like `toEnum` but returns the first argument if `x` is less than
 -- | `fromEnum bottom` and the second argument if `x` is greater than
@@ -211,17 +224,18 @@ enumFromTo = case _, _ of
 -- | The example shows `Array` return values, but the result can be any type
 -- | with an `Unfoldable1` instance.
 enumFromThenTo :: forall f a. Unfoldable f => Functor f => BoundedEnum a => a -> a -> a -> f a
-enumFromThenTo = unsafePartial \a b c ->
+enumFromThenTo = unsafePartial \a b c -> do
   let
     a' = fromEnum a
     b' = fromEnum b
     c' = fromEnum c
-  in
-    (toEnum >>> fromJust) <$> unfoldr (go (b' - a') c') a'
+  (toEnum >>> fromJust) <$> unfoldr (go (b' - a') c') a'
   where
-  go step to e
-    | e <= to = Just (Tuple e (e + step))
-    | otherwise = Nothing
+  go step to e =
+    if e <= to then
+      Just (Tuple e (e + step))
+    else
+      Nothing
 
 -- | Produces all successors of an `Enum` value, excluding the start value.
 upFrom :: forall a u. Enum a => Unfoldable u => a -> u a
@@ -291,11 +305,14 @@ defaultCardinality = Cardinality $ go 1 (bottom :: a)
 -- | Runs in `O(n)` where `n` is `fromEnum a`.
 defaultToEnum :: forall a. Bounded a => Enum a => Int -> Maybe a
 defaultToEnum i' =
-  if i' < 0 then Nothing
-  else go i' bottom
+  if i' < 0 then
+    Nothing
+  else
+    go i' bottom
   where
   go i x =
-    if i == 0 then Just x
+    if i == 0 then
+      Just x
     -- We avoid using >>= here because it foils tail-call optimization
     else case succ x of
       Just x' -> go (i - 1) x'
@@ -319,8 +336,11 @@ diag :: forall a. a -> Tuple a a
 diag a = Tuple a a
 
 charToEnum :: Int -> Maybe Char
-charToEnum n | n >= toCharCode bottom && n <= toCharCode top = Just (fromCharCode n)
-charToEnum _ = Nothing
+charToEnum n =
+  if n >= toCharCode bottom && n <= toCharCode top then
+    Just (fromCharCode n)
+  else
+    Nothing
 
 foreign import toCharCode :: Char -> Int
 foreign import fromCharCode :: Int -> Char

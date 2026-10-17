@@ -73,25 +73,21 @@ instance genericBoundedEnumConstructor :: GenericBoundedEnum a => GenericBounded
   genericFromEnum' (Constructor a) = genericFromEnum' a
 
 instance genericBoundedEnumSum :: (GenericBoundedEnum a, GenericBoundedEnum b) => GenericBoundedEnum (Sum a b) where
-  genericCardinality' =
-    Cardinality
-      $ unwrap (genericCardinality' :: Cardinality a)
-          + unwrap (genericCardinality' :: Cardinality b)
+  genericCardinality' = Cardinality (unwrap (genericCardinality' :: Cardinality a) + unwrap (genericCardinality' :: Cardinality b))
   genericToEnum' n = to genericCardinality'
     where
     to :: Cardinality a -> Maybe (Sum a b)
-    to (Cardinality ca)
-      | n >= 0 && n < ca = Inl <$> genericToEnum' n
-      | otherwise = Inr <$> genericToEnum' (n - ca)
+    to (Cardinality ca) =
+      if n >= 0 && n < ca then
+        Inl <$> genericToEnum' n
+      else
+        Inr <$> genericToEnum' (n - ca)
   genericFromEnum' = case _ of
     Inl a -> genericFromEnum' a
     Inr b -> genericFromEnum' b + unwrap (genericCardinality' :: Cardinality a)
 
 instance genericBoundedEnumProduct :: (GenericBoundedEnum a, GenericBoundedEnum b) => GenericBoundedEnum (Product a b) where
-  genericCardinality' =
-    Cardinality
-      $ unwrap (genericCardinality' :: Cardinality a)
-          * unwrap (genericCardinality' :: Cardinality b)
+  genericCardinality' = Cardinality (unwrap (genericCardinality' :: Cardinality a) * unwrap (genericCardinality' :: Cardinality b))
   genericToEnum' n = to genericCardinality'
     where
     to :: Cardinality b -> Maybe (Product a b)

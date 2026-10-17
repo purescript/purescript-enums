@@ -24,17 +24,19 @@ instance showT :: Show T where
     E -> "E"
 
 instance enumT :: Enum T where
-  succ A = Just B
-  succ B = Just C
-  succ C = Just D
-  succ D = Just E
-  succ E = Nothing
+  succ = case _ of
+    A -> Just B
+    B -> Just C
+    C -> Just D
+    D -> Just E
+    E -> Nothing
 
-  pred A = Nothing
-  pred B = Just A
-  pred C = Just B
-  pred D = Just C
-  pred E = Just D
+  pred = case _ of
+    A -> Nothing
+    B -> Just A
+    C -> Just B
+    D -> Just C
+    E -> Just D
 
 instance boundedT :: Bounded T where
   bottom = A
